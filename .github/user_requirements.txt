@@ -1,0 +1,68 @@
+Company Name: Zambezi Meats
+Address: 6/1053 Old Princes Highway, Engadine, NSW 2233, Australia
+Service Area:  Menangle Park + Engadine + City of Campbelltown + Sydney + Australia
+Developer: bguvava (www.bguvava.com)
+Target Market: Locals in Sydney and surrounding areas/tows/cities
+
+---
+
+Available info and requirements:
+1. Check attached logo (ZambeziMeats-logo.png), use the logo colors to generate the color palette but aiming for something closer to what's on the company logo.
+2. Use free stock photography for meat cuts, and all other products
+3. The online shop must feel and look High-end/Gourmet
+4. We sell by fixed price per kilogram - customer tells us the weight they want.
+5. There is no product customisation required when customers are buying
+6. The website must track live inventory to prevent overselling
+7. Business operating hours are 7am-6pm. No slot system required 
+8. Delivery fees are free on orders over $100 to specified neighborhoods (postcode areas). Delivery fee for suburbs outside specified neighbourhoods will be calculated based in distance from the shop (for areas far and outside the city its 15 cents per kilometre)
+9. Minimum order for delivery is, $100
+10. Payment methods accepted are cash and online payments such as Stripe/Paypal/Visa/Mastercard and Afterpay. 
+11. For all order alerts - email to manager + dashboard alerts to the store
+12. Complete product list is found in the Product_List.pdf file
+
+
+---
+
+The required key features and functionality:
+
+1. For Customers: 
+The customer-facing side must prioritize ease of use, transparency, and product quality:
+- User-friendly interface: An intuitive and mobile-responsive design for seamless browsing and ordering on any device.
+- Detailed product showcase: High-quality images and comprehensive descriptions, build trust and aid decision-making.
+- Customizable orders: Options to select specific cuts, weights, and packaging preferences to replicate the in-person butcher experience.
+- Advanced search and filtering: The ability to easily find products by type, price, brand, or dietary preferences.
+- Secure and multiple payment options: Integration with various secure payment gateways (credit cards, digital wallets, etc.) for a frictionless checkout process.
+- Order tracking and status: Real updates on the order status from preparation to delivery, which manages expectations and builds trust.
+- Flexible delivery scheduling: The ability to choose preferred delivery dates and time slots.
+- Order history & re-ordering: Easy access to past orders for quick re-purchasing of favorite items.
+
+2. For Business Owners (Admin/Management Panel)
+The back-end system should focus on operational efficiency, inventory management, and data analysis:  
+- Product and catalog management: Tools to easily add, edit, or remove products, update pricing, availability status, and manage different cuts and packaging options.
+- Perishable inventory management: A specialized system to track stock levels in real-time, monitor expiration dates, and receive low-stock alerts to minimize waste.
+- Order and fulfillment management: A centralized dashboard to efficiently process, manage, and assign orders to the packing and delivery teams.
+- Integrated logistics and delivery management: Features for route optimization, order and driver tracking, and proof of delivery capture (signature/photo).
+- Customer Relationship Management (CRM): Tools to manage customer databases, track preferences and purchase history, and handle customer complaints.
+- Sales analytics and reporting: Detailed reports on sales performance, popular products, customer data, and growth trends to make data-driven decisions.
+- Staff and store management: Features to manage staff roles and permissions, and oversee operations across multiple locations if applicable.
+- Compliance and food safety tools: Built-in systems to ensure adherence to food safety regulations and provide product traceability.
+- Secure payment processing & financial reporting: Management of all monetary transactions, including tax invoices and tracking earnings/payouts.
+
+---
+#Core Structural Elements for the front page design:
+-Compelling Headline & Supporting Subheadline: The headline should immediately grab attention and clearly state the core offer and primary benefit (the value proposition). The subheadline provides brief, supporting details.
+- Single, Clear Call to Action (CTA): The page should focus on one primary goal, with a visually prominent, action-oriented CTA button (the main attraction/offers for this app) placed strategically above the fold and potentially repeated further down the page.
+- Visually Appealing & Relevant Media: High-quality images that show the product/service in context can significantly boost engagement and comprehension. 
+
+#Modern Design and User Experience (UX)
+- Clean, Minimalist Layout & White Space: A clutter-free design using ample white space prevents visitor overwhelm, guides the eye toward the CTA, and makes the content easy to scan.
+- Mobile Responsiveness and Fast Loading Speed: A "mobile-first" design approach is essential, ensuring the page functions flawlessly and loads quickly on smartphones and tablets. Slow load times can kill conversions.
+- Intuitive Visual Hierarchy: Content should be structured logically using layout, color contrast, and varying font sizes to guide the user's attention from the headline to the supporting details and finally to the CTA.
+- Interactive Elements: Micro-interactions, subtle animations, or embedded interactive tools can make the experience dynamic and increase engagement. 
+
+#Trust and Persuasion:
+- Social Proof & Trust Signals: Building credibility is vital. Include authentic security badges and security to reassure visitors.
+- Benefit-Oriented Copy: The text should be concise and focus on the benefits and outcomes for the user, rather than just a list of features.
+
+---
+
