@@ -268,6 +268,7 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 #### Customer Dashboard Modules
 | Module | Description |
 |--------|-------------|
+| **Shop** | Product catalog as the main landing page - immediate product browsing |
 | **Overview** | Dashboard home with recent orders and quick actions |
 | **My Orders** | Order history, tracking, and reorder functionality |
 | **Order Detail** | Individual order view with status timeline |
@@ -465,170 +466,83 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 
 ## 7. Technical Stack
 
-### 7.1 Backend Framework Comparison
+### 7.1 Technology Stack Overview
 
-> **⚠️ DECISION REQUIRED: Choose your preferred backend framework**
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        ZAMBEZI MEATS TECH STACK                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   FRONTEND                          BACKEND                                 │
+│   ┌─────────────────────┐          ┌─────────────────────┐                 │
+│   │ Vue.js 3 + Vite     │          │ Laravel 11          │                 │
+│   │ Tailwind CSS        │◄────────►│ PHP 8.2+            │                 │
+│   │ shadcn/ui           │  REST    │ Laravel Sanctum     │                 │
+│   │ Headless UI         │   API    │ Eloquent ORM        │                 │
+│   └─────────────────────┘          └──────────┬──────────┘                 │
+│                                               │                             │
+│                                    ┌──────────▼──────────┐                 │
+│                                    │    MySQL 8.0        │                 │
+│                                    └─────────────────────┘                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
-#### Option A: Laravel 11 (PHP)
+### 7.2 Frontend Stack
 
-| Aspect | Details |
-|--------|---------|
-| **Language** | PHP 8.2+ |
-| **Type** | Full-stack MVC Framework |
-| **Learning Curve** | Moderate |
-| **Performance** | Good (with optimization) |
-| **Hosting Compatibility** | ✅ Excellent - Native CyberPanel/cPanel support |
-
-**Pros:**
-- ✅ Native shared hosting support (CyberPanel, cPanel, DirectAdmin)
-- ✅ Excellent ORM (Eloquent) for database operations
-- ✅ Built-in authentication (Sanctum for SPA)
-- ✅ Mature ecosystem with extensive packages
-- ✅ Queue system for background jobs
-- ✅ Blade templating (if needed for emails/PDFs)
-- ✅ Laravel Cashier for subscription management
-- ✅ Great documentation and community
-
-**Cons:**
-- ❌ Slower than Node.js for concurrent requests
-- ❌ PHP shared hosting resource limits
-- ❌ Less suitable for real-time features (needs workarounds)
-
-**Best For:** Traditional shared hosting deployment, rapid development
-
----
-
-#### Option B: Node.js + Express/Fastify (JavaScript)
-
-| Aspect | Details |
-|--------|---------|
-| **Language** | JavaScript/TypeScript |
-| **Type** | Minimal Framework (build your stack) |
-| **Learning Curve** | Moderate to High |
-| **Performance** | Excellent (event-driven, non-blocking) |
-| **Hosting Compatibility** | ⚠️ Requires VPS or Node.js hosting |
-
-**Pros:**
-- ✅ Excellent performance for concurrent requests
-- ✅ Same language as frontend (JavaScript)
-- ✅ Better for real-time features (SSE/polling)
-- ✅ Huge npm ecosystem
-- ✅ TypeScript support for type safety
-- ✅ Better JSON handling (native)
-- ✅ Fastify is extremely fast
-
-**Cons:**
-- ❌ NOT supported on standard CyberPanel/cPanel shared hosting
-- ❌ Requires VPS or specialized Node.js hosting
-- ❌ More manual setup (auth, ORM, validation)
-- ❌ Callback/Promise complexity
-- ❌ Less structured than Laravel
-
-**Best For:** VPS hosting, real-time apps, high-traffic scenarios
-
----
-
-### 7.2 Comparison Matrix
-
-| Criteria | Laravel (PHP) | Node.js (Express/Fastify) | Winner |
-|----------|---------------|---------------------------|--------|
-| **CyberPanel Hosting** | ✅ Native | ❌ Not supported | Laravel |
-| **Shared Hosting** | ✅ Yes | ❌ No (needs VPS) | Laravel |
-| **Development Speed** | ✅ Fast (batteries included) | ⚠️ Moderate | Laravel |
-| **Performance** | ⚠️ Good | ✅ Excellent | Node.js |
-| **Real-Time Updates** | ⚠️ SSE/Polling | ✅ Native event loop | Node.js |
-| **API Development** | ✅ Excellent | ✅ Excellent | Tie |
-| **Database ORM** | ✅ Eloquent (excellent) | ⚠️ Prisma/Sequelize | Laravel |
-| **Authentication** | ✅ Built-in (Sanctum) | ⚠️ Manual (Passport.js) | Laravel |
-| **PDF Generation** | ✅ DomPDF/TCPDF | ✅ Puppeteer/PDFKit | Tie |
-| **Deployment Ease** | ✅ Upload & run | ⚠️ Process manager needed | Laravel |
-| **Community/Support** | ✅ Excellent | ✅ Excellent | Tie |
-| **Cost (Hosting)** | ✅ Cheaper (shared) | ⚠️ Higher (VPS) | Laravel |
-
-### 7.3 Recommendation
-
-**🏆 RECOMMENDED: Laravel 11 (PHP)**
-
-Given the requirements:
-1. ✅ CyberPanel hosting is specified - Laravel works natively
-2. ✅ Shared hosting is cost-effective for a small butcher shop
-3. ✅ Faster development with built-in features
-4. ✅ E-commerce packages available (payment gateways, inventory)
-5. ✅ No additional infrastructure needed
-
-**Alternative Consideration:**
-If you plan to scale significantly or need advanced real-time features, consider a VPS with Node.js in the future. Laravel will serve well for initial launch and can handle the expected traffic.
-
----
-
-### 7.4 Recommended Technology Stack (Laravel-Based)
-
-#### Frontend
 | Component | Technology | Justification |
 |-----------|------------|---------------|
-| **Framework** | Vue.js 3 + Vite | Lightweight, fast, SPA-optimized |
-| **UI Library** | Tailwind CSS + Headless UI | Modern, customizable components |
-| **State Management** | Pinia | Official Vue.js store |
-| **HTTP Client** | Axios | Robust API communication |
-| **Charts** | Chart.js + Vue-ChartJS | Lightweight analytics |
+| **Framework** | Vue.js 3 | Lightweight, reactive, excellent for SPAs |
+| **Build Tool** | Vite | Lightning-fast HMR, optimized builds |
+| **CSS Framework** | Tailwind CSS | Utility-first, highly customizable |
+| **UI Components** | shadcn/ui | Beautiful, accessible, copy-paste components |
+| **Headless Components** | Headless UI | Unstyled, accessible UI primitives |
+| **State Management** | Pinia | Official Vue.js store, TypeScript-ready |
+| **HTTP Client** | Axios | Robust API communication with interceptors |
+| **Charts** | Chart.js + Vue-ChartJS | Lightweight, responsive analytics |
 | **PDF Generation** | jsPDF + html2canvas | Client-side PDF export |
 | **Currency** | currency.js | Accurate currency calculations |
-| **Form Validation** | VeeValidate + Yup | Form handling |
-| **Icons** | Heroicons / Lucide | Modern icon sets |
-| **Animations** | GSAP / Vue Transitions | Smooth animations |
-| **Date Handling** | Day.js | Lightweight dates |
+| **Form Validation** | VeeValidate + Zod | Form handling with schema validation |
+| **Icons** | Lucide Vue | Modern, consistent icon set (shadcn default) |
+| **Animations** | Vue Transitions + GSAP | Smooth, performant animations |
+| **Date Handling** | Day.js | Lightweight date manipulation |
+| **Toast/Notifications** | Vue Sonner | Beautiful toast notifications |
 
-#### Backend (Laravel)
+### 7.3 Backend Stack (Laravel)
+
 | Component | Technology | Justification |
 |-----------|------------|---------------|
-| **Runtime** | PHP 8.2+ | CyberPanel native |
-| **Framework** | Laravel 11 | Robust MVC, API-ready |
-| **API Auth** | Laravel Sanctum | SPA authentication |
-| **Database** | MySQL 8.0 | Reliable, well-supported |
-| **Caching** | File Cache / Redis | Query optimization |
-| **Queue** | Laravel Queue (Database) | Background jobs |
-| **Real-Time** | Server-Sent Events (SSE) | Real-time updates |
-| **PDF Server-Side** | DomPDF | Server PDF generation |
-| **Currency Exchange** | ExchangeRate-API | Live currency rates |
+| **Runtime** | PHP 8.2+ | CyberPanel native, modern features |
+| **Framework** | Laravel 11 | Robust MVC, API-ready, excellent ecosystem |
+| **API Authentication** | Laravel Sanctum | SPA cookie-based + token auth |
+| **Database** | MySQL 8.0 | Reliable, well-supported, CyberPanel native |
+| **ORM** | Eloquent | Elegant, expressive database operations |
+| **Caching** | File Cache / Redis | Query optimization, session storage |
+| **Queue** | Laravel Queue (Database) | Background jobs for emails, reports |
+| **Real-Time** | Server-Sent Events (SSE) | Real-time updates without WebSocket |
+| **PDF Server-Side** | DomPDF / Snappy | Server PDF generation for exports |
+| **File Storage** | Laravel Storage | Local + S3-compatible storage |
+| **Email** | Laravel Mail | SMTP, Mailgun, SendGrid support |
+| **Validation** | Laravel Validation | Powerful request validation |
+| **Testing** | PHPUnit + Pest | Comprehensive testing framework |
 
-#### Alternative Backend (Node.js) - If VPS Chosen
-| Component | Technology | Justification |
-|-----------|------------|---------------|
-| **Runtime** | Node.js 20 LTS | Latest stable |
-| **Framework** | Fastify | High performance |
-| **API Auth** | Passport.js + JWT | Token authentication |
-| **ORM** | Prisma | Type-safe database |
-| **Database** | MySQL 8.0 | Consistency |
-| **Caching** | Redis | Fast caching |
-| **Real-Time** | Native EventEmitter | SSE streaming |
-| **PDF** | Puppeteer | High-quality PDFs |
+### 7.4 Third-Party Integrations
 
-#### Third-Party Integrations
 | Service | Provider | Purpose |
 |---------|----------|---------|
-| **Payments** | Stripe | Primary gateway (AU$/US$) |
-| **Payments** | PayPal | Alternative (AU$/US$) |
-| **Payments** | Afterpay | Buy-now-pay-later |
-| **Email** | SMTP / SendGrid | Transactional emails |
-| **Maps** | Google Maps API | Delivery routes |
+| **Payments** | Stripe | Primary payment gateway (AU$/US$) |
+| **Payments** | PayPal | Alternative payment option (AU$/US$) |
+| **Payments** | Afterpay | Buy-now-pay-later (AU$ only) |
+| **Email Service** | SMTP / SendGrid | Transactional emails |
+| **Maps** | Google Maps API | Delivery route optimization |
 | **Address** | Google Places API | Australian address autocomplete |
-| **Currency** | ExchangeRate-API | AU$/US$ conversion |
+| **Currency** | ExchangeRate-API | Live AU$/US$ conversion rates |
 
 ---
 
 ## 8. Hosting Environment Recommendation
 
-### 8.1 Hosting Options Comparison
-
-| Hosting Type | Provider Examples | Laravel | Node.js | Monthly Cost | Best For |
-|--------------|-------------------|---------|---------|--------------|----------|
-| **Shared (cPanel)** | Hostinger, SiteGround | ✅ Yes | ❌ No | $5-15 | Small shops, starting out |
-| **CyberPanel VPS** | Contabo, Vultr | ✅ Yes | ✅ Yes | $10-30 | Growing business |
-| **Managed Laravel** | Laravel Forge + DigitalOcean | ✅ Yes | ❌ No | $20-50 | Laravel-focused |
-| **Cloud PaaS** | Railway, Render | ✅ Yes | ✅ Yes | $20-50 | Auto-scaling |
-| **AWS/GCP** | AWS Lightsail, GCP | ✅ Yes | ✅ Yes | $20-100+ | Enterprise |
-
-### 8.2 Recommended Hosting Setup
+### 8.1 Recommended Hosting Setup
 
 **🏆 RECOMMENDED: CyberPanel on VPS**
 
@@ -644,7 +558,7 @@ If you plan to scale significantly or need advanced real-time features, consider
 
 **Estimated Total: $10-20/month**
 
-### 8.3 Recommended VPS Specifications
+### 8.2 Recommended VPS Specifications
 
 | Spec | Minimum | Recommended |
 |------|---------|-------------|
@@ -654,7 +568,7 @@ If you plan to scale significantly or need advanced real-time features, consider
 | **Bandwidth** | 1 TB | Unlimited |
 | **Location** | Sydney, Australia | Sydney, Australia |
 
-### 8.4 Why CyberPanel VPS?
+### 8.3 Why CyberPanel VPS?
 
 1. ✅ **LiteSpeed Web Server** - 10x faster than Apache
 2. ✅ **Free SSL** - Let's Encrypt integration
@@ -774,57 +688,7 @@ If you plan to scale significantly or need advanced real-time features, consider
 
 ---
 
-## 12. Development Phases
-
-### Phase 1: Foundation (Weeks 1-2)
-- [ ] Project setup and repository initialization
-- [ ] Database schema design and migrations
-- [ ] Authentication system (Guest, Customer, Staff, Admin)
-- [ ] Basic API structure
-- [ ] Frontend scaffolding with shop-first routing
-
-### Phase 2: Core Shop Features (Weeks 3-5)
-- [ ] Product catalog (shop as landing page)
-- [ ] Product detail modals
-- [ ] Shopping cart (slide-out panel)
-- [ ] Search and filtering
-- [ ] Currency selector (AU$/US$)
-- [ ] User registration/login
-
-### Phase 3: Orders & Payments (Weeks 6-7)
-- [ ] Checkout process (multi-currency)
-- [ ] Payment gateway integrations (Stripe, PayPal, Afterpay)
-- [ ] Order management system
-- [ ] Email notifications
-- [ ] Order tracking
-
-### Phase 4: Staff & Operations (Weeks 8-9)
-- [ ] Staff dashboard
-- [ ] Order processing workflow
-- [ ] Delivery management
-- [ ] Route optimization
-- [ ] Proof of delivery capture
-- [ ] Inventory quick-look
-
-### Phase 5: Administration (Weeks 10-11)
-- [ ] Admin dashboard with KPIs
-- [ ] User management
-- [ ] Full inventory control
-- [ ] Reports and analytics
-- [ ] Promotions system
-- [ ] System settings
-
-### Phase 6: Polish & Deploy (Week 12)
-- [ ] Performance optimization
-- [ ] Security audit
-- [ ] Testing and bug fixes
-- [ ] Documentation
-- [ ] CyberPanel VPS deployment
-- [ ] Go-live
-
----
-
-## 13. Directory Structure
+## 12. Directory Structure
 
 ```
 zambezi-meats/
@@ -869,7 +733,7 @@ zambezi-meats/
 
 ---
 
-## 14. Success Metrics
+## 13. Success Metrics
 
 | Metric | Target |
 |--------|--------|
@@ -884,24 +748,25 @@ zambezi-meats/
 
 ---
 
-## 15. Document Information
+## 14. Document Information
 
 | Field | Value |
 |-------|-------|
-| **Document Version** | 2.0 |
+| **Document Version** | 2.1 |
 | **Created Date** | December 12, 2025 |
 | **Last Updated** | December 12, 2025 |
 | **Author** | bguvava |
-| **Status** | Draft - Pending Tech Stack Decision |
-| **Next Review** | Upon backend framework selection |
+| **Status** | Draft - Tech Stack Confirmed |
+| **Next Review** | Upon development kickoff |
 
 ---
 
-## 16. Decision Checklist
+## 15. Decision Checklist
 
 Before proceeding, please confirm:
 
-- [ ] **Backend Framework**: Laravel (recommended) or Node.js?
+- [x] **Tech Stack**: Laravel 11 + Vue.js 3 + Vite + Tailwind CSS + shadcn/ui
+- [x] **Database**: MySQL 8.0
 - [ ] **Hosting**: CyberPanel VPS (recommended) or alternative?
 - [ ] **Currency Default**: AU$ with US$ option confirmed?
 - [ ] **Roles Confirmed**: Guest, Customer, Staff, Admin?
