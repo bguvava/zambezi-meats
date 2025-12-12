@@ -15,19 +15,20 @@
 | **Developer** | bguvava (www.bguvava.com) |
 
 ### 1.2 Project Objective
-To develop a **high-end, gourmet online butchery store** that provides a seamless, premium shopping experience for customers while offering robust business management tools for the store operations team. The system will be a **Single Page Application (SPA)** with a dashboard-centric architecture, optimized for deployment on CyberPanel hosting environment.
+To develop a **high-end, gourmet online butchery store** that provides a seamless, premium shopping experience for customers while offering robust business management tools for the store operations team. The system will be a **Single Page Application (SPA)** with a dashboard-centric architecture, designed for **instant product browsing** (shop-first approach) to maximize customer retention and conversion rates.
 
 ### 1.3 Project Goals
 
 | # | Goal | Description |
 |---|------|-------------|
-| 1 | **Premium User Experience** | Deliver a visually stunning, fast, and intuitive interface that reflects the gourmet quality of products |
-| 2 | **Operational Efficiency** | Streamline order processing, inventory management, and delivery logistics |
-| 3 | **Real-Time Inventory Control** | Prevent overselling through live stock tracking and synchronization |
-| 4 | **Scalable Architecture** | Build a maintainable codebase that can grow with the business |
-| 5 | **Data-Driven Decisions** | Provide comprehensive analytics and reporting for business insights |
-| 6 | **Secure Transactions** | Implement robust security measures for payments and customer data |
-| 7 | **Compliance Ready** | Ensure food safety regulations and traceability requirements are met |
+| 1 | **Instant Shop Access** | Users land directly on the shop page to immediately browse products - no landing page barriers |
+| 2 | **Premium User Experience** | Deliver a visually stunning, fast, and intuitive interface that reflects the gourmet quality of products |
+| 3 | **Operational Efficiency** | Streamline order processing, inventory management, and delivery logistics |
+| 4 | **Real-Time Inventory Control** | Prevent overselling through live stock tracking and synchronization |
+| 5 | **Scalable Architecture** | Build a maintainable codebase that can grow with the business |
+| 6 | **Data-Driven Decisions** | Provide comprehensive analytics and reporting for business insights |
+| 7 | **Secure Transactions** | Implement robust security measures for payments and customer data |
+| 8 | **Multi-Currency Support** | Allow customers to view prices and pay in AU$ or US$ |
 
 ---
 
@@ -38,33 +39,34 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              ZAMBEZI MEATS SPA                              │
+│                         (Shop-First Architecture)                           │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐  │
-│  │   PUBLIC    │    │  CUSTOMER   │    │    STAFF    │    │    ADMIN    │  │
-│  │  STOREFRONT │    │  DASHBOARD  │    │  DASHBOARD  │    │  DASHBOARD  │  │
-│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘    └──────┬──────┘  │
-│         │                  │                  │                  │         │
-│         └──────────────────┴──────────────────┴──────────────────┘         │
-│                                    │                                        │
-│                          ┌─────────▼─────────┐                             │
-│                          │   API GATEWAY     │                             │
-│                          │   (REST API)      │                             │
-│                          └─────────┬─────────┘                             │
-│                                    │                                        │
-└────────────────────────────────────┼────────────────────────────────────────┘
-                                     │
-┌────────────────────────────────────┼────────────────────────────────────────┐
-│                           BACKEND SERVICES                                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐     │
-│  │  Auth    │  │ Products │  │  Orders  │  │ Inventory│  │ Delivery │     │
-│  │ Service  │  │ Service  │  │ Service  │  │ Service  │  │ Service  │     │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘     │
-│       └─────────────┴─────────────┴─────────────┴─────────────┘           │
-│                                    │                                        │
-│                          ┌─────────▼─────────┐                             │
-│                          │   MySQL Database  │                             │
-│                          └───────────────────┘                             │
+│  ┌───────────────────────┐    ┌─────────────┐    ┌─────────────────────┐   │
+│  │     SHOP/STOREFRONT   │    │  CUSTOMER   │    │       ADMIN         │   │
+│  │   (Default Landing)   │    │  DASHBOARD  │    │     DASHBOARD       │   │
+│  └───────────┬───────────┘    └──────┬──────┘    └──────────┬──────────┘   │
+│              │                       │                      │              │
+│              └───────────────────────┴──────────────────────┘              │
+│                                      │                                      │
+│                            ┌─────────▼─────────┐                           │
+│                            │   API GATEWAY     │                           │
+│                            │   (REST API)      │                           │
+│                            └─────────┬─────────┘                           │
+│                                      │                                      │
+└──────────────────────────────────────┼──────────────────────────────────────┘
+                                       │
+┌──────────────────────────────────────┼──────────────────────────────────────┐
+│                            BACKEND SERVICES                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│  │  Auth    │  │ Products │  │  Orders  │  │ Inventory│  │ Delivery │      │
+│  │ Service  │  │ Service  │  │ Service  │  │ Service  │  │ Service  │      │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘      │
+│       └─────────────┴─────────────┴─────────────┴─────────────┘            │
+│                                      │                                      │
+│                            ┌─────────▼─────────┐                           │
+│                            │   MySQL Database  │                           │
+│                            └───────────────────┘                           │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -72,11 +74,13 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 
 | Principle | Implementation |
 |-----------|----------------|
+| **Shop-First Approach** | No landing page - users see products immediately upon visiting |
 | **SPA Architecture** | Dashboard-based interface with child modal windows |
 | **Responsive Design** | Mobile-first approach, adapts to all screen sizes |
 | **Real-Time Sync** | Long-polling/SSE for real-time updates (WebSocket alternative) |
 | **Headless Modals** | Minimize page navigation, use tabs and modal dialogs |
 | **Performance First** | Lazy loading, image optimization, caching strategies |
+| **Currency Flexibility** | AU$ default with US$ option for international customers |
 
 ---
 
@@ -87,11 +91,12 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                           CUSTOMER ORDER WORKFLOW                            │
+│                        (Shop-First - No Landing Page)                        │
 └──────────────────────────────────────────────────────────────────────────────┘
 
   ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-  │ BROWSE  │────▶│  ADD TO │────▶│CHECKOUT │────▶│ PAYMENT │────▶│  ORDER  │
-  │PRODUCTS │     │  CART   │     │ DETAILS │     │ PROCESS │     │CONFIRMED│
+  │  SHOP   │────▶│  ADD TO │────▶│CHECKOUT │────▶│ PAYMENT │────▶│  ORDER  │
+  │(Landing)│     │  CART   │     │ DETAILS │     │ PROCESS │     │CONFIRMED│
   └─────────┘     └─────────┘     └─────────┘     └─────────┘     └─────────┘
        │                               │               │               │
        ▼                               ▼               ▼               ▼
@@ -99,8 +104,9 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
   │ Filter  │                    │ Address │    │ Stripe  │    │  Email  │
   │ Search  │                    │Validate │    │ PayPal  │    │  Alert  │
   │ Compare │                    │Delivery │    │Afterpay │    │Dashboard│
-  └─────────┘                    │  Fees   │    │  Cash   │    │  Alert  │
-                                 └─────────┘    └─────────┘    └─────────┘
+  │ AU$/US$ │                    │  Fees   │    │  Cash   │    │  Alert  │
+  └─────────┘                    │Currency │    │AU$/US$  │    └─────────┘
+                                 └─────────┘    └─────────┘
 ```
 
 ### 3.2 Order Processing Flow (Staff)
@@ -108,26 +114,20 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                          ORDER PROCESSING WORKFLOW                           │
+│                    (Combined Packing & Delivery by Staff)                    │
 └──────────────────────────────────────────────────────────────────────────────┘
 
   ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-  │  NEW    │────▶│ACCEPTED │────▶│PREPARING│────▶│  READY  │────▶│  OUT    │
-  │  ORDER  │     │         │     │         │     │         │     │DELIVERY │
+  │  NEW    │────▶│ACCEPTED │────▶│PREPARING│────▶│  OUT    │────▶│DELIVERED│
+  │  ORDER  │     │         │     │& PACKING│     │DELIVERY │     │  (POD)  │
   └─────────┘     └─────────┘     └─────────┘     └─────────┘     └─────────┘
        │               │               │               │               │
        ▼               ▼               ▼               ▼               ▼
   ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
-  │Dashboard│    │ Stock   │    │Packaging│    │ Assign  │    │ Route   │
-  │  Alert  │    │ Reserve │    │ Process │    │ Driver  │    │ Optimize│
-  │  Email  │    │         │    │         │    │         │    │ Track   │
+  │Dashboard│    │ Stock   │    │ Staff   │    │ Route   │    │Complete │
+  │  Alert  │    │ Reserve │    │Processes│    │ Optimize│    │ Order   │
+  │  Email  │    │         │    │ Order   │    │ Track   │    │ Close   │
   └─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘
-                                                                    │
-                                                                    ▼
-                                                              ┌─────────┐
-                                                              │DELIVERED│
-                                                              │  POD    │
-                                                              │Complete │
-                                                              └─────────┘
 ```
 
 ### 3.3 Inventory Management Flow
@@ -161,47 +161,89 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 
 ## 4. User Roles & Responsibilities
 
-### 4.1 Role Definitions
+### 4.1 Role Definitions (Simplified - 4 Roles)
 
 | Role | Description | Access Level |
 |------|-------------|--------------|
-| **Guest** | Unauthenticated visitor browsing the storefront | Public only |
+| **Guest** | Unauthenticated visitor browsing the shop | Public shop only |
 | **Customer** | Registered user who can place orders and track deliveries | Customer Dashboard |
-| **Packer** | Staff responsible for preparing and packaging orders | Limited Staff Dashboard |
-| **Driver** | Delivery personnel with route and delivery management | Limited Staff Dashboard |
-| **Manager** | Store manager overseeing daily operations | Full Staff Dashboard |
-| **Administrator** | System administrator with full access and configuration rights | Admin Dashboard |
+| **Staff** | Combined role for packing, delivery, and daily operations | Staff Dashboard |
+| **Admin** | Full system control including management and configuration | Admin Dashboard |
 
 ### 4.2 Role Hierarchy
 
 ```
                     ┌─────────────────┐
-                    │  ADMINISTRATOR  │
-                    │   (Level 5)     │
+                    │      ADMIN      │
+                    │   (Level 3)     │
+                    │ Full Control    │
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
-                    │    MANAGER      │
-                    │   (Level 4)     │
+                    │      STAFF      │
+                    │   (Level 2)     │
+                    │ Packing+Delivery│
                     └────────┬────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │              │              │
-     ┌────────▼────────┐     │     ┌────────▼────────┐
-     │     PACKER      │     │     │     DRIVER      │
-     │   (Level 2)     │     │     │   (Level 2)     │
-     └─────────────────┘     │     └─────────────────┘
                              │
                     ┌────────▼────────┐
                     │    CUSTOMER     │
                     │   (Level 1)     │
+                    │ Shopping+Orders │
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
                     │     GUEST       │
                     │   (Level 0)     │
+                    │ Browse Only     │
                     └─────────────────┘
 ```
+
+### 4.3 Role Responsibilities Detail
+
+#### Guest
+- Browse products immediately (shop is the landing page)
+- View product details, prices, and availability
+- Add items to cart
+- Complete checkout (guest checkout available)
+- Contact the store
+- Register for an account
+- Select preferred currency (AU$/US$)
+
+#### Customer
+- All Guest capabilities
+- Access personal dashboard
+- Track order status and history
+- Manage delivery addresses
+- Reorder previous purchases
+- Manage wishlist
+- Submit support tickets
+- View and manage notifications
+- Set currency preference
+
+#### Staff
+- Access Staff dashboard
+- View and process assigned orders
+- Update order status (preparing → packed → out for delivery → delivered)
+- View inventory levels
+- Record waste/damage
+- Capture proof of delivery (signature/photo)
+- View optimized delivery routes
+- Log personal activity
+- Quick stock lookups
+
+#### Admin
+- Full system access
+- User and staff management
+- Product and category management
+- Complete inventory control
+- Order lifecycle management (accept, edit, cancel, refund)
+- Delivery zone and fee configuration
+- Financial reports and analytics
+- System settings and integrations
+- Audit logs and activity monitoring
+- Promotions and discount management
+- Backup and maintenance
+- Currency exchange rate management
 
 ---
 
@@ -209,456 +251,429 @@ To develop a **high-end, gourmet online butchery store** that provides a seamles
 
 ### 5.1 Module Overview by Role
 
-#### Guest Modules (Public Storefront)
+#### Guest/Public Modules (Shop-First - No Landing Page)
 | Module | Description |
 |--------|-------------|
-| **Home** | Landing page with featured products, promotions, and CTAs |
-| **Shop** | Product catalog with search, filter, and category navigation |
-| **Product Detail** | Individual product page with images, description, pricing |
-| **Cart** | Shopping cart management |
-| **Checkout** | Guest checkout process |
-| **Contact** | Contact form and store information |
-| **About** | Company information and story |
+| **Shop** | Product catalog as the main landing page - immediate product browsing |
+| **Product Detail** | Individual product modal/page with images, description, pricing |
+| **Cart** | Shopping cart management (slide-out panel) |
+| **Checkout** | Streamlined checkout process |
+| **Quick View** | Product quick-view modal without leaving shop |
+| **Search** | Global product search with filters |
+| **Categories** | Category navigation sidebar/menu |
+| **Contact** | Contact form modal |
+| **About** | About us modal/section |
+| **Currency Selector** | AU$/US$ toggle in header |
 
 #### Customer Dashboard Modules
 | Module | Description |
 |--------|-------------|
-| **Overview** | Dashboard home with recent orders and recommendations |
+| **Overview** | Dashboard home with recent orders and quick actions |
 | **My Orders** | Order history, tracking, and reorder functionality |
-| **My Profile** | Personal information and preferences management |
+| **Order Detail** | Individual order view with status timeline |
+| **My Profile** | Personal information and preferences (including currency) |
 | **Addresses** | Delivery address management |
 | **Wishlist** | Saved products for future purchase |
-| **Notifications** | Order updates and promotional alerts |
+| **Notifications** | Order updates and alerts |
 | **Support** | Help center and ticket submission |
 
-#### Packer Dashboard Modules
+#### Staff Dashboard Modules
 | Module | Description |
 |--------|-------------|
-| **Overview** | Daily tasks and pending orders summary |
-| **Orders Queue** | List of orders to be prepared |
-| **Order Processing** | Order details and packaging checklist |
+| **Overview** | Daily tasks summary, pending orders, deliveries count |
+| **Orders Queue** | List of orders to prepare and pack |
+| **Order Processing** | Order details, packaging checklist, status updates |
+| **Deliveries** | Assigned deliveries with route map |
+| **Delivery Detail** | Individual delivery info and POD capture |
 | **Stock Check** | Quick inventory lookup |
-| **Activity Log** | Personal activity history |
+| **Waste Log** | Record damaged/expired items |
+| **My Activity** | Personal activity and performance log |
 
-#### Driver Dashboard Modules
+#### Admin Dashboard Modules
 | Module | Description |
 |--------|-------------|
-| **Overview** | Daily deliveries summary and route overview |
-| **My Deliveries** | Assigned deliveries list |
-| **Route Map** | Optimized delivery route with navigation |
-| **Delivery Details** | Individual delivery information and POD capture |
-| **Earnings** | Delivery earnings and history |
-| **Activity Log** | Personal delivery history |
-
-#### Manager Dashboard Modules
-| Module | Description |
-|--------|-------------|
-| **Overview** | Business metrics, alerts, and quick actions |
-| **Orders** | Full order management (view, edit, cancel, refund) |
-| **Products** | Product catalog management |
-| **Inventory** | Stock levels, adjustments, expiry tracking |
+| **Overview** | KPIs, alerts, revenue charts, quick actions |
+| **Orders** | Full order management (all orders, filters, actions) |
+| **Products** | Product and category management |
+| **Inventory** | Stock levels, adjustments, expiry tracking, waste |
 | **Customers** | Customer database and CRM |
-| **Deliveries** | Delivery scheduling and driver assignment |
-| **Staff** | Packer and driver management |
-| **Reports** | Sales, inventory, and performance reports |
-| **Promotions** | Discounts, coupons, and promotional campaigns |
-| **Settings** | Store settings (hours, delivery zones, fees) |
-
-#### Administrator Dashboard Modules
-| Module | Description |
-|--------|-------------|
-| **Overview** | System health, performance metrics, and alerts |
-| **Users** | All user account management |
-| **Roles & Permissions** | Role configuration and access control |
-| **Products** | Full product and category management |
-| **Orders** | Complete order lifecycle management |
-| **Inventory** | Full inventory control and waste management |
-| **Customers** | Complete CRM with data export |
-| **Deliveries** | All delivery operations and logistics |
-| **Finance** | Revenue, payments, and financial reports |
-| **Reports** | Comprehensive analytics and custom reports |
-| **Settings** | System-wide configuration |
+| **Staff** | Staff account management and activity monitoring |
+| **Deliveries** | All delivery operations, zone management, fee config |
+| **Finance** | Revenue, payments, tax, financial reports |
+| **Reports** | Sales analytics, inventory reports, custom reports |
+| **Promotions** | Discounts, coupons, promotional campaigns |
+| **Settings** | Store hours, delivery zones, payment gateways, currency rates |
 | **Audit Logs** | Complete activity and change logs |
-| **Integrations** | Third-party service management (payments, email) |
-| **Backup & Maintenance** | Database backups and system maintenance |
+| **Integrations** | Third-party services (payments, email, maps) |
+| **System** | Backup, maintenance, health monitoring |
 
 ---
 
 ## 6. Permissions Matrix
 
-### 6.1 Storefront Permissions
+### 6.1 Shop & Public Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View Products | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View Product Details | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Add to Cart | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Checkout | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| View Prices | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Submit Contact Form | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Create Account | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View Shop (Landing) | ✅ | ✅ | ✅ | ✅ |
+| View Products | ✅ | ✅ | ✅ | ✅ |
+| View Product Details | ✅ | ✅ | ✅ | ✅ |
+| View Prices | ✅ | ✅ | ✅ | ✅ |
+| Switch Currency (AU$/US$) | ✅ | ✅ | ✅ | ✅ |
+| Add to Cart | ✅ | ✅ | ❌ | ❌ |
+| Checkout | ✅ | ✅ | ❌ | ❌ |
+| Use Wishlist | ❌ | ✅ | ❌ | ❌ |
+| Submit Contact Form | ✅ | ✅ | ❌ | ❌ |
+| Create Account | ✅ | ❌ | ❌ | ❌ |
 
-### 6.2 Customer Permissions
+### 6.2 Customer Account Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View Own Orders | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Track Own Orders | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Cancel Own Orders | ❌ | ✅* | ❌ | ❌ | ❌ | ❌ |
-| Request Refund | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Manage Own Profile | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Manage Own Addresses | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| View Order History | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Reorder Past Orders | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Manage Wishlist | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Submit Support Ticket | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| Access Customer Dashboard | ❌ | ✅ | ❌ | ✅ |
+| View Own Orders | ❌ | ✅ | ❌ | ✅ |
+| Track Own Orders | ❌ | ✅ | ❌ | ✅ |
+| Cancel Own Orders* | ❌ | ✅ | ❌ | ✅ |
+| Request Refund | ❌ | ✅ | ❌ | ✅ |
+| Manage Own Profile | ❌ | ✅ | ✅ | ✅ |
+| Manage Own Addresses | ❌ | ✅ | ❌ | ✅ |
+| View Order History | ❌ | ✅ | ❌ | ✅ |
+| Reorder Past Orders | ❌ | ✅ | ❌ | ❌ |
+| Manage Wishlist | ❌ | ✅ | ❌ | ❌ |
+| Submit Support Ticket | ❌ | ✅ | ❌ | ✅ |
+| Set Currency Preference | ❌ | ✅ | ✅ | ✅ |
 
 *\* Only before order is processed*
 
 ### 6.3 Order Management Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View All Orders | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Assigned Orders | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| Accept Orders | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Reject Orders | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Update Order Status | ❌ | ❌ | ✅* | ✅* | ✅ | ✅ |
-| Assign Orders to Staff | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Edit Order Details | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Cancel Orders | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Process Refunds | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Order Analytics | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Export Orders | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View All Orders | ❌ | ❌ | ❌ | ✅ |
+| View Assigned Orders | ❌ | ❌ | ✅ | ✅ |
+| Accept New Orders | ❌ | ❌ | ❌ | ✅ |
+| Reject Orders | ❌ | ❌ | ❌ | ✅ |
+| Update Order Status | ❌ | ❌ | ✅* | ✅ |
+| Assign Orders to Staff | ❌ | ❌ | ❌ | ✅ |
+| Edit Order Details | ❌ | ❌ | ❌ | ✅ |
+| Cancel Orders | ❌ | ❌ | ❌ | ✅ |
+| Process Refunds | ❌ | ❌ | ❌ | ✅ |
+| View Order Analytics | ❌ | ❌ | ❌ | ✅ |
+| Export Orders (PDF) | ❌ | ❌ | ❌ | ✅ |
+| Print Packing Slip | ❌ | ❌ | ✅ | ✅ |
 
-*\* Limited to their assigned workflow stage*
+*\* Limited to: Preparing → Packed → Out for Delivery → Delivered*
 
 ### 6.4 Product Management Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View Products (Admin) | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Create Products | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Edit Products | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Delete Products | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Manage Categories | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Set Pricing | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Manage Product Images | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Set Product Availability | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Bulk Import Products | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Export Product Data | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View Products (Admin Panel) | ❌ | ❌ | ❌ | ✅ |
+| Create Products | ❌ | ❌ | ❌ | ✅ |
+| Edit Products | ❌ | ❌ | ❌ | ✅ |
+| Delete Products | ❌ | ❌ | ❌ | ✅ |
+| Manage Categories | ❌ | ❌ | ❌ | ✅ |
+| Set Pricing (AU$/US$) | ❌ | ❌ | ❌ | ✅ |
+| Manage Product Images | ❌ | ❌ | ❌ | ✅ |
+| Set Product Availability | ❌ | ❌ | ❌ | ✅ |
+| Bulk Import Products | ❌ | ❌ | ❌ | ✅ |
+| Export Product Data (PDF) | ❌ | ❌ | ❌ | ✅ |
+| Manage Featured Products | ❌ | ❌ | ❌ | ✅ |
 
 ### 6.5 Inventory Management Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View Stock Levels | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ |
-| Receive Stock | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Adjust Stock | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Record Waste | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ |
-| Set Low Stock Alerts | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Manage Expiry Dates | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Inventory Reports | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Export Inventory Data | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View Stock Levels | ❌ | ❌ | ✅ | ✅ |
+| Receive Stock | ❌ | ❌ | ❌ | ✅ |
+| Adjust Stock | ❌ | ❌ | ❌ | ✅ |
+| Record Waste/Damage | ❌ | ❌ | ✅ | ✅ |
+| Set Low Stock Alerts | ❌ | ❌ | ❌ | ✅ |
+| Manage Expiry Dates | ❌ | ❌ | ❌ | ✅ |
+| View Inventory Reports | ❌ | ❌ | ❌ | ✅ |
+| Export Inventory Data (PDF) | ❌ | ❌ | ❌ | ✅ |
 
 ### 6.6 Delivery Management Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View All Deliveries | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Assigned Deliveries | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| Assign Drivers | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Update Delivery Status | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| Capture POD | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| Manage Delivery Zones | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Set Delivery Fees | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Route Analytics | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View All Deliveries | ❌ | ❌ | ❌ | ✅ |
+| View Assigned Deliveries | ❌ | ❌ | ✅ | ✅ |
+| Update Delivery Status | ❌ | ❌ | ✅ | ✅ |
+| Capture POD (Photo/Signature) | ❌ | ❌ | ✅ | ✅ |
+| View Route Map | ❌ | ❌ | ✅ | ✅ |
+| Manage Delivery Zones | ❌ | ❌ | ❌ | ✅ |
+| Set Delivery Fees | ❌ | ❌ | ❌ | ✅ |
+| View Delivery Analytics | ❌ | ❌ | ❌ | ✅ |
+| Assign Deliveries to Staff | ❌ | ❌ | ❌ | ✅ |
 
 ### 6.7 Customer Management Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View Customer List | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Customer Details | ❌ | ❌ | ❌ | ✅* | ✅ | ✅ |
-| Edit Customer Info | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Delete Customer | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| View Purchase History | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Manage Customer Notes | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Handle Complaints | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Export Customer Data | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View Customer List | ❌ | ❌ | ❌ | ✅ |
+| View Customer Details | ❌ | ❌ | ✅* | ✅ |
+| Edit Customer Info | ❌ | ❌ | ❌ | ✅ |
+| Delete Customer | ❌ | ❌ | ❌ | ✅ |
+| View Purchase History | ❌ | ❌ | ❌ | ✅ |
+| Manage Customer Notes | ❌ | ❌ | ❌ | ✅ |
+| Handle Support Tickets | ❌ | ❌ | ❌ | ✅ |
+| Export Customer Data (PDF) | ❌ | ❌ | ❌ | ✅ |
 
-*\* Limited to delivery-relevant information only*
+*\* Limited to delivery-relevant information (name, address, phone)*
 
 ### 6.8 Staff Management Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View Staff List | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Create Staff Account | ❌ | ❌ | ❌ | ❌ | ✅* | ✅ |
-| Edit Staff Details | ❌ | ❌ | ❌ | ❌ | ✅* | ✅ |
-| Deactivate Staff | ❌ | ❌ | ❌ | ❌ | ✅* | ✅ |
-| Delete Staff Account | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Assign Roles | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| View Staff Activity | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Manage Schedules | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-
-*\* Packer and Driver roles only*
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View Staff List | ❌ | ❌ | ❌ | ✅ |
+| Create Staff Account | ❌ | ❌ | ❌ | ✅ |
+| Edit Staff Details | ❌ | ❌ | ❌ | ✅ |
+| Deactivate Staff | ❌ | ❌ | ❌ | ✅ |
+| Delete Staff Account | ❌ | ❌ | ❌ | ✅ |
+| View Staff Activity | ❌ | ❌ | ❌ | ✅ |
+| View Own Activity | ❌ | ❌ | ✅ | ✅ |
 
 ### 6.9 Financial & Reports Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View Sales Reports | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Financial Summary | ❌ | ❌ | ❌ | ❌ | ✅* | ✅ |
-| View Payment Records | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Process Manual Payments | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View Tax Reports | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Export Financial Data | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Configure Payment Settings | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-
-*\* Limited view*
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View Sales Reports | ❌ | ❌ | ❌ | ✅ |
+| View Financial Summary | ❌ | ❌ | ❌ | ✅ |
+| View Payment Records | ❌ | ❌ | ❌ | ✅ |
+| Process Manual Payments | ❌ | ❌ | ❌ | ✅ |
+| View Tax Reports | ❌ | ❌ | ❌ | ✅ |
+| Export Financial Data (PDF) | ❌ | ❌ | ❌ | ✅ |
+| Configure Payment Settings | ❌ | ❌ | ❌ | ✅ |
+| Manage Currency Exchange Rates | ❌ | ❌ | ❌ | ✅ |
 
 ### 6.10 System Administration Permissions
 
-| Permission | Guest | Customer | Packer | Driver | Manager | Admin |
-|------------|:-----:|:--------:|:------:|:------:|:-------:|:-----:|
-| View System Settings | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Edit Store Settings | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Manage Integrations | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| View Audit Logs | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Manage Backups | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| System Maintenance | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Configure Email Templates | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Manage Promotions | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Permission | Guest | Customer | Staff | Admin |
+|------------|:-----:|:--------:|:-----:|:-----:|
+| View System Settings | ❌ | ❌ | ❌ | ✅ |
+| Edit Store Settings | ❌ | ❌ | ❌ | ✅ |
+| Manage Integrations | ❌ | ❌ | ❌ | ✅ |
+| View Audit Logs | ❌ | ❌ | ❌ | ✅ |
+| Manage Backups | ❌ | ❌ | ❌ | ✅ |
+| System Maintenance | ❌ | ❌ | ❌ | ✅ |
+| Configure Email Templates | ❌ | ❌ | ❌ | ✅ |
+| Manage Promotions | ❌ | ❌ | ❌ | ✅ |
+| Configure Currency Settings | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
 ## 7. Technical Stack
 
-### 7.1 Recommended Technology Stack
+### 7.1 Backend Framework Comparison
+
+> **⚠️ DECISION REQUIRED: Choose your preferred backend framework**
+
+#### Option A: Laravel 11 (PHP)
+
+| Aspect | Details |
+|--------|---------|
+| **Language** | PHP 8.2+ |
+| **Type** | Full-stack MVC Framework |
+| **Learning Curve** | Moderate |
+| **Performance** | Good (with optimization) |
+| **Hosting Compatibility** | ✅ Excellent - Native CyberPanel/cPanel support |
+
+**Pros:**
+- ✅ Native shared hosting support (CyberPanel, cPanel, DirectAdmin)
+- ✅ Excellent ORM (Eloquent) for database operations
+- ✅ Built-in authentication (Sanctum for SPA)
+- ✅ Mature ecosystem with extensive packages
+- ✅ Queue system for background jobs
+- ✅ Blade templating (if needed for emails/PDFs)
+- ✅ Laravel Cashier for subscription management
+- ✅ Great documentation and community
+
+**Cons:**
+- ❌ Slower than Node.js for concurrent requests
+- ❌ PHP shared hosting resource limits
+- ❌ Less suitable for real-time features (needs workarounds)
+
+**Best For:** Traditional shared hosting deployment, rapid development
+
+---
+
+#### Option B: Node.js + Express/Fastify (JavaScript)
+
+| Aspect | Details |
+|--------|---------|
+| **Language** | JavaScript/TypeScript |
+| **Type** | Minimal Framework (build your stack) |
+| **Learning Curve** | Moderate to High |
+| **Performance** | Excellent (event-driven, non-blocking) |
+| **Hosting Compatibility** | ⚠️ Requires VPS or Node.js hosting |
+
+**Pros:**
+- ✅ Excellent performance for concurrent requests
+- ✅ Same language as frontend (JavaScript)
+- ✅ Better for real-time features (SSE/polling)
+- ✅ Huge npm ecosystem
+- ✅ TypeScript support for type safety
+- ✅ Better JSON handling (native)
+- ✅ Fastify is extremely fast
+
+**Cons:**
+- ❌ NOT supported on standard CyberPanel/cPanel shared hosting
+- ❌ Requires VPS or specialized Node.js hosting
+- ❌ More manual setup (auth, ORM, validation)
+- ❌ Callback/Promise complexity
+- ❌ Less structured than Laravel
+
+**Best For:** VPS hosting, real-time apps, high-traffic scenarios
+
+---
+
+### 7.2 Comparison Matrix
+
+| Criteria | Laravel (PHP) | Node.js (Express/Fastify) | Winner |
+|----------|---------------|---------------------------|--------|
+| **CyberPanel Hosting** | ✅ Native | ❌ Not supported | Laravel |
+| **Shared Hosting** | ✅ Yes | ❌ No (needs VPS) | Laravel |
+| **Development Speed** | ✅ Fast (batteries included) | ⚠️ Moderate | Laravel |
+| **Performance** | ⚠️ Good | ✅ Excellent | Node.js |
+| **Real-Time Updates** | ⚠️ SSE/Polling | ✅ Native event loop | Node.js |
+| **API Development** | ✅ Excellent | ✅ Excellent | Tie |
+| **Database ORM** | ✅ Eloquent (excellent) | ⚠️ Prisma/Sequelize | Laravel |
+| **Authentication** | ✅ Built-in (Sanctum) | ⚠️ Manual (Passport.js) | Laravel |
+| **PDF Generation** | ✅ DomPDF/TCPDF | ✅ Puppeteer/PDFKit | Tie |
+| **Deployment Ease** | ✅ Upload & run | ⚠️ Process manager needed | Laravel |
+| **Community/Support** | ✅ Excellent | ✅ Excellent | Tie |
+| **Cost (Hosting)** | ✅ Cheaper (shared) | ⚠️ Higher (VPS) | Laravel |
+
+### 7.3 Recommendation
+
+**🏆 RECOMMENDED: Laravel 11 (PHP)**
+
+Given the requirements:
+1. ✅ CyberPanel hosting is specified - Laravel works natively
+2. ✅ Shared hosting is cost-effective for a small butcher shop
+3. ✅ Faster development with built-in features
+4. ✅ E-commerce packages available (payment gateways, inventory)
+5. ✅ No additional infrastructure needed
+
+**Alternative Consideration:**
+If you plan to scale significantly or need advanced real-time features, consider a VPS with Node.js in the future. Laravel will serve well for initial launch and can handle the expected traffic.
+
+---
+
+### 7.4 Recommended Technology Stack (Laravel-Based)
 
 #### Frontend
 | Component | Technology | Justification |
 |-----------|------------|---------------|
-| **Framework** | Vue.js 3 + Vite | Lightweight, fast, SPA-optimized, excellent for dashboards |
-| **UI Library** | Tailwind CSS + Headless UI | Modern, customizable, headless components for modals |
-| **State Management** | Pinia | Official Vue.js store, lightweight and TypeScript-friendly |
-| **HTTP Client** | Axios | Robust API communication with interceptors |
-| **Charts** | Chart.js + Vue-ChartJS | Lightweight, responsive analytics visualization |
-| **PDF Generation** | jsPDF + html2canvas | Client-side PDF export with consistent layout |
-| **Form Validation** | VeeValidate + Yup | Comprehensive form handling and validation |
-| **Icons** | Heroicons / Lucide | Modern, lightweight icon sets |
-| **Animations** | GSAP / Vue Transitions | Smooth, performant animations |
-| **Date Handling** | Day.js | Lightweight date manipulation |
+| **Framework** | Vue.js 3 + Vite | Lightweight, fast, SPA-optimized |
+| **UI Library** | Tailwind CSS + Headless UI | Modern, customizable components |
+| **State Management** | Pinia | Official Vue.js store |
+| **HTTP Client** | Axios | Robust API communication |
+| **Charts** | Chart.js + Vue-ChartJS | Lightweight analytics |
+| **PDF Generation** | jsPDF + html2canvas | Client-side PDF export |
+| **Currency** | currency.js | Accurate currency calculations |
+| **Form Validation** | VeeValidate + Yup | Form handling |
+| **Icons** | Heroicons / Lucide | Modern icon sets |
+| **Animations** | GSAP / Vue Transitions | Smooth animations |
+| **Date Handling** | Day.js | Lightweight dates |
 
-#### Backend
+#### Backend (Laravel)
 | Component | Technology | Justification |
 |-----------|------------|---------------|
-| **Runtime** | PHP 8.2+ | CyberPanel native support, mature ecosystem |
-| **Framework** | Laravel 11 | Robust MVC, excellent ORM, built-in auth, API-ready |
-| **API** | Laravel Sanctum | SPA authentication, token-based API security |
-| **Database** | MySQL 8.0 | CyberPanel native, reliable, well-documented |
-| **Caching** | Redis / File Cache | Session management and query optimization |
-| **Queue** | Laravel Queue (Database) | Background job processing for emails, reports |
-| **Real-Time** | Laravel Broadcasting (SSE) | Server-Sent Events for real-time updates |
-| **File Storage** | Local + CDN | CyberPanel file system with optional CDN |
-| **PDF Server-Side** | DomPDF / TCPDF | Server-side PDF generation for exports |
+| **Runtime** | PHP 8.2+ | CyberPanel native |
+| **Framework** | Laravel 11 | Robust MVC, API-ready |
+| **API Auth** | Laravel Sanctum | SPA authentication |
+| **Database** | MySQL 8.0 | Reliable, well-supported |
+| **Caching** | File Cache / Redis | Query optimization |
+| **Queue** | Laravel Queue (Database) | Background jobs |
+| **Real-Time** | Server-Sent Events (SSE) | Real-time updates |
+| **PDF Server-Side** | DomPDF | Server PDF generation |
+| **Currency Exchange** | ExchangeRate-API | Live currency rates |
+
+#### Alternative Backend (Node.js) - If VPS Chosen
+| Component | Technology | Justification |
+|-----------|------------|---------------|
+| **Runtime** | Node.js 20 LTS | Latest stable |
+| **Framework** | Fastify | High performance |
+| **API Auth** | Passport.js + JWT | Token authentication |
+| **ORM** | Prisma | Type-safe database |
+| **Database** | MySQL 8.0 | Consistency |
+| **Caching** | Redis | Fast caching |
+| **Real-Time** | Native EventEmitter | SSE streaming |
+| **PDF** | Puppeteer | High-quality PDFs |
 
 #### Third-Party Integrations
 | Service | Provider | Purpose |
 |---------|----------|---------|
-| **Payments** | Stripe | Primary payment gateway |
-| **Payments** | PayPal | Alternative payment option |
-| **Payments** | Afterpay | Buy-now-pay-later option |
+| **Payments** | Stripe | Primary gateway (AU$/US$) |
+| **Payments** | PayPal | Alternative (AU$/US$) |
+| **Payments** | Afterpay | Buy-now-pay-later |
 | **Email** | SMTP / SendGrid | Transactional emails |
-| **SMS** | Twilio (optional) | Order notifications |
-| **Maps** | Google Maps API | Delivery route optimization |
-| **Address Validation** | Google Places API | Australian address autocomplete |
-
-#### DevOps & Deployment
-| Component | Technology | Justification |
-|-----------|------------|---------------|
-| **Version Control** | Git + GitHub | Source control and collaboration |
-| **Hosting** | CyberPanel (LiteSpeed) | As specified, optimized for PHP |
-| **SSL** | Let's Encrypt | Free SSL certificates via CyberPanel |
-| **CI/CD** | GitHub Actions | Automated testing and deployment |
-| **Monitoring** | Laravel Telescope (Dev) | Debug and monitoring in development |
-
-### 7.2 Directory Structure
-
-```
-zambezi-meats/
-├── .github/
-│   ├── workflows/          # GitHub Actions CI/CD
-│   ├── prompts/            # AI prompts and documentation
-│   └── user_requirements.txt
-├── backend/                # Laravel Application
-│   ├── app/
-│   │   ├── Http/
-│   │   │   ├── Controllers/
-│   │   │   │   ├── Api/
-│   │   │   │   │   ├── AuthController.php
-│   │   │   │   │   ├── ProductController.php
-│   │   │   │   │   ├── OrderController.php
-│   │   │   │   │   ├── InventoryController.php
-│   │   │   │   │   ├── CustomerController.php
-│   │   │   │   │   ├── DeliveryController.php
-│   │   │   │   │   ├── ReportController.php
-│   │   │   │   │   └── SettingsController.php
-│   │   │   │   └── Web/
-│   │   │   ├── Middleware/
-│   │   │   └── Requests/
-│   │   ├── Models/
-│   │   ├── Services/
-│   │   ├── Events/
-│   │   ├── Listeners/
-│   │   └── Exports/
-│   ├── config/
-│   ├── database/
-│   │   ├── migrations/
-│   │   ├── seeders/
-│   │   └── factories/
-│   ├── routes/
-│   │   ├── api.php
-│   │   └── web.php
-│   ├── resources/
-│   ├── storage/
-│   ├── tests/
-│   ├── .env.example
-│   ├── composer.json
-│   └── artisan
-├── frontend/               # Vue.js Application
-│   ├── src/
-│   │   ├── assets/
-│   │   │   ├── css/
-│   │   │   ├── images/
-│   │   │   └── fonts/
-│   │   ├── components/
-│   │   │   ├── common/
-│   │   │   ├── layout/
-│   │   │   ├── storefront/
-│   │   │   └── dashboard/
-│   │   ├── composables/
-│   │   ├── layouts/
-│   │   ├── pages/
-│   │   │   ├── public/
-│   │   │   ├── customer/
-│   │   │   ├── staff/
-│   │   │   └── admin/
-│   │   ├── router/
-│   │   ├── stores/
-│   │   ├── services/
-│   │   ├── utils/
-│   │   ├── App.vue
-│   │   └── main.js
-│   ├── public/
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── package.json
-├── docs/                   # Documentation
-│   ├── api/
-│   ├── guides/
-│   └── database-schema.md
-├── docker/                 # Docker configs (local dev)
-├── .gitignore
-├── README.md
-└── docker-compose.yml
-```
-
-### 7.3 Database Schema Overview
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           DATABASE SCHEMA OVERVIEW                          │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-USERS & AUTH                    PRODUCTS & INVENTORY
-┌──────────────┐               ┌──────────────┐
-│    users     │               │  categories  │
-├──────────────┤               ├──────────────┤
-│ id           │               │ id           │
-│ email        │               │ name         │
-│ password     │               │ slug         │
-│ role_id  ────┼──┐            │ parent_id    │
-│ status       │  │            │ image        │
-│ created_at   │  │            │ sort_order   │
-└──────────────┘  │            └──────┬───────┘
-                  │                   │
-┌──────────────┐  │            ┌──────▼───────┐
-│    roles     │◄─┘            │   products   │
-├──────────────┤               ├──────────────┤
-│ id           │               │ id           │
-│ name         │               │ category_id ─┤
-│ slug         │               │ name         │
-│ permissions  │               │ slug         │
-└──────────────┘               │ description  │
-                               │ price_per_kg │
-┌──────────────┐               │ min_weight   │
-│  addresses   │               │ max_weight   │
-├──────────────┤               │ images       │
-│ id           │               │ is_featured  │
-│ user_id  ────┼──────────┐    │ status       │
-│ type         │          │    └──────┬───────┘
-│ street       │          │           │
-│ suburb       │          │    ┌──────▼───────┐
-│ state        │          │    │  inventory   │
-│ postcode     │          │    ├──────────────┤
-│ is_default   │          │    │ id           │
-└──────────────┘          │    │ product_id ──┤
-                          │    │ quantity_kg  │
-                          │    │ batch_number │
-ORDERS & DELIVERY         │    │ expiry_date  │
-┌──────────────┐          │    │ cost_price   │
-│   orders     │          │    │ received_at  │
-├──────────────┤          │    └──────────────┘
-│ id           │          │
-│ user_id  ────┼──────────┤    ACTIVITY & LOGS
-│ order_number │          │    ┌──────────────┐
-│ status       │          │    │ activity_logs│
-│ subtotal     │          │    ├──────────────┤
-│ delivery_fee │          │    │ id           │
-│ total        │          │    │ user_id  ────┼──┐
-│ address_id ──┤          │    │ action       │  │
-│ notes        │          │    │ model_type   │  │
-│ created_at   │          │    │ model_id     │  │
-└──────┬───────┘          │    │ changes      │  │
-       │                  │    │ ip_address   │  │
-┌──────▼───────┐          │    │ created_at   │  │
-│ order_items  │          │    └──────────────┘  │
-├──────────────┤          │                      │
-│ id           │          │    ┌──────────────┐  │
-│ order_id ────┤          │    │   sessions   │  │
-│ product_id ──┼──────────┘    ├──────────────┤  │
-│ quantity_kg  │               │ id           │  │
-│ price_per_kg │               │ user_id  ────┼──┘
-│ total_price  │               │ token        │
-└──────────────┘               │ ip_address   │
-                               │ user_agent   │
-┌──────────────┐               │ last_active  │
-│  deliveries  │               └──────────────┘
-├──────────────┤
-│ id           │               SETTINGS & CONFIG
-│ order_id ────┤               ┌──────────────┐
-│ driver_id    │               │   settings   │
-│ status       │               ├──────────────┤
-│ route_data   │               │ id           │
-│ pod_image    │               │ key          │
-│ pod_signature│               │ value        │
-│ delivered_at │               │ group        │
-└──────────────┘               └──────────────┘
-```
+| **Maps** | Google Maps API | Delivery routes |
+| **Address** | Google Places API | Australian address autocomplete |
+| **Currency** | ExchangeRate-API | AU$/US$ conversion |
 
 ---
 
-## 8. Color Palette & Branding
+## 8. Hosting Environment Recommendation
 
-### 8.1 Primary Colors (Based on Logo + Butcher Theme)
+### 8.1 Hosting Options Comparison
+
+| Hosting Type | Provider Examples | Laravel | Node.js | Monthly Cost | Best For |
+|--------------|-------------------|---------|---------|--------------|----------|
+| **Shared (cPanel)** | Hostinger, SiteGround | ✅ Yes | ❌ No | $5-15 | Small shops, starting out |
+| **CyberPanel VPS** | Contabo, Vultr | ✅ Yes | ✅ Yes | $10-30 | Growing business |
+| **Managed Laravel** | Laravel Forge + DigitalOcean | ✅ Yes | ❌ No | $20-50 | Laravel-focused |
+| **Cloud PaaS** | Railway, Render | ✅ Yes | ✅ Yes | $20-50 | Auto-scaling |
+| **AWS/GCP** | AWS Lightsail, GCP | ✅ Yes | ✅ Yes | $20-100+ | Enterprise |
+
+### 8.2 Recommended Hosting Setup
+
+**🏆 RECOMMENDED: CyberPanel on VPS**
+
+| Component | Recommendation | Cost (USD/month) |
+|-----------|----------------|------------------|
+| **VPS Provider** | Contabo VPS S | ~$7 |
+| **Alternative** | Vultr High Frequency | ~$12 |
+| **Control Panel** | CyberPanel (Free) | $0 |
+| **SSL** | Let's Encrypt (Free) | $0 |
+| **CDN** | Cloudflare (Free tier) | $0 |
+| **Backup** | CyberPanel + Offsite | ~$3 |
+| **Domain** | Existing (zambezimeats.com) | ~$15/year |
+
+**Estimated Total: $10-20/month**
+
+### 8.3 Recommended VPS Specifications
+
+| Spec | Minimum | Recommended |
+|------|---------|-------------|
+| **CPU** | 2 vCPU | 4 vCPU |
+| **RAM** | 4 GB | 8 GB |
+| **Storage** | 50 GB SSD | 100 GB NVMe |
+| **Bandwidth** | 1 TB | Unlimited |
+| **Location** | Sydney, Australia | Sydney, Australia |
+
+### 8.4 Why CyberPanel VPS?
+
+1. ✅ **LiteSpeed Web Server** - 10x faster than Apache
+2. ✅ **Free SSL** - Let's Encrypt integration
+3. ✅ **One-Click Laravel** - Easy deployment
+4. ✅ **LSCache** - Built-in caching
+5. ✅ **Email Server** - Built-in email
+6. ✅ **Free** - No license cost
+7. ✅ **Low Latency** - Australian data center option
+
+---
+
+## 9. Color Palette & Branding
+
+### 9.1 Primary Colors (Vibrant Butcher Theme)
 
 | Color | Hex Code | Usage |
 |-------|----------|-------|
-| **Zambezi Red** | `#B91C1C` | Primary brand color, CTAs, highlights |
-| **Dark Red** | `#7F1D1D` | Hover states, dark accents |
+| **Zambezi Red** | `#DC2626` | Primary brand color, CTAs, highlights |
+| **Dark Red** | `#991B1B` | Hover states, dark accents |
 | **Light Red** | `#FEE2E2` | Backgrounds, alerts |
 | **Charcoal** | `#1F2937` | Primary text, headers |
 | **Warm Gray** | `#6B7280` | Secondary text |
@@ -666,10 +681,9 @@ ORDERS & DELIVERY         │    │ expiry_date  │
 | **Pure White** | `#FFFFFF` | Cards, modals |
 | **Gold Accent** | `#D97706` | Premium highlights, badges |
 | **Success Green** | `#059669` | Success states, availability |
-| **Warning Amber** | `#D97706` | Warnings, low stock |
-| **Error Red** | `#DC2626` | Errors, out of stock |
+| **Warning Amber** | `#F59E0B` | Warnings, low stock |
 
-### 8.2 Typography
+### 9.2 Typography
 
 | Element | Font | Weight | Size |
 |---------|------|--------|------|
@@ -677,42 +691,56 @@ ORDERS & DELIVERY         │    │ expiry_date  │
 | **Body** | Inter | 400, 500 | 14-16px |
 | **Labels** | Inter | 600 | 12-14px |
 | **Buttons** | Inter | 600 | 14-16px |
+| **Prices** | Inter | 700 | 16-24px |
 
 ---
 
-## 9. Business Rules
+## 10. Business Rules
 
-### 9.1 Pricing & Orders
+### 10.1 Pricing & Orders
 
 | Rule | Value |
 |------|-------|
 | Pricing Model | Fixed price per kilogram |
-| Minimum Order (Delivery) | AU$100 |
+| Minimum Order (Delivery) | AU$100 / ~US$65 |
 | Free Delivery Threshold | AU$100+ (specified postcodes) |
 | Delivery Fee Calculation | $0.15/km for outside zones |
-| Currency | Australian Dollar (AU$) |
+| **Currencies Supported** | **AU$ (default) and US$** |
+| Exchange Rate Source | ExchangeRate-API (daily update) |
 
-### 9.2 Operating Hours
+### 10.2 Currency Handling
+
+| Aspect | Implementation |
+|--------|----------------|
+| Default Currency | AU$ (Australian Dollar) |
+| Alternative Currency | US$ (United States Dollar) |
+| Display | User-selectable in header |
+| Prices Stored | AU$ (base currency) |
+| Conversion | Real-time via API |
+| Checkout | Payment in selected currency |
+| Rounding | Nearest cent |
+
+### 10.3 Operating Hours
 
 | Day | Hours |
 |-----|-------|
 | Monday - Sunday | 7:00 AM - 6:00 PM AEST |
 
-### 9.3 Payment Methods
+### 10.4 Payment Methods
 
-| Method | Status |
-|--------|--------|
-| Credit/Debit Cards (Visa, Mastercard) | ✅ Enabled |
-| Stripe | ✅ Enabled |
-| PayPal | ✅ Enabled |
-| Afterpay | ✅ Enabled |
-| Cash on Delivery | ✅ Enabled |
+| Method | AU$ | US$ |
+|--------|:---:|:---:|
+| Credit/Debit Cards (Visa, Mastercard) | ✅ | ✅ |
+| Stripe | ✅ | ✅ |
+| PayPal | ✅ | ✅ |
+| Afterpay | ✅ | ❌ |
+| Cash on Delivery | ✅ | ❌ |
 
 ---
 
-## 10. PDF Export Template
+## 11. PDF Export Template
 
-### 10.1 Standard PDF Layout
+### 11.1 Standard PDF Layout
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -746,41 +774,44 @@ ORDERS & DELIVERY         │    │ expiry_date  │
 
 ---
 
-## 11. Development Phases
+## 12. Development Phases
 
 ### Phase 1: Foundation (Weeks 1-2)
 - [ ] Project setup and repository initialization
 - [ ] Database schema design and migrations
-- [ ] Authentication and authorization system
+- [ ] Authentication system (Guest, Customer, Staff, Admin)
 - [ ] Basic API structure
-- [ ] Frontend scaffolding and routing
+- [ ] Frontend scaffolding with shop-first routing
 
-### Phase 2: Core Features (Weeks 3-5)
-- [ ] Product management module
-- [ ] Inventory management module
-- [ ] Public storefront pages
-- [ ] Shopping cart functionality
-- [ ] User registration and profiles
+### Phase 2: Core Shop Features (Weeks 3-5)
+- [ ] Product catalog (shop as landing page)
+- [ ] Product detail modals
+- [ ] Shopping cart (slide-out panel)
+- [ ] Search and filtering
+- [ ] Currency selector (AU$/US$)
+- [ ] User registration/login
 
 ### Phase 3: Orders & Payments (Weeks 6-7)
-- [ ] Checkout process
-- [ ] Payment gateway integrations
+- [ ] Checkout process (multi-currency)
+- [ ] Payment gateway integrations (Stripe, PayPal, Afterpay)
 - [ ] Order management system
 - [ ] Email notifications
 - [ ] Order tracking
 
-### Phase 4: Operations (Weeks 8-9)
-- [ ] Packer dashboard and workflow
-- [ ] Driver dashboard and delivery management
+### Phase 4: Staff & Operations (Weeks 8-9)
+- [ ] Staff dashboard
+- [ ] Order processing workflow
+- [ ] Delivery management
 - [ ] Route optimization
 - [ ] Proof of delivery capture
-- [ ] Real-time status updates
+- [ ] Inventory quick-look
 
 ### Phase 5: Administration (Weeks 10-11)
-- [ ] Admin dashboard
-- [ ] User and role management
+- [ ] Admin dashboard with KPIs
+- [ ] User management
+- [ ] Full inventory control
 - [ ] Reports and analytics
-- [ ] CRM features
+- [ ] Promotions system
 - [ ] System settings
 
 ### Phase 6: Polish & Deploy (Week 12)
@@ -788,33 +819,93 @@ ORDERS & DELIVERY         │    │ expiry_date  │
 - [ ] Security audit
 - [ ] Testing and bug fixes
 - [ ] Documentation
-- [ ] CyberPanel deployment
+- [ ] CyberPanel VPS deployment
 - [ ] Go-live
 
 ---
 
-## 12. Success Metrics
+## 13. Directory Structure
+
+```
+zambezi-meats/
+├── .github/
+│   ├── workflows/          # GitHub Actions CI/CD
+│   ├── prompts/            # AI prompts and documentation
+│   └── user_requirements.txt
+├── backend/                # Laravel Application
+│   ├── app/
+│   │   ├── Http/
+│   │   │   ├── Controllers/Api/
+│   │   │   ├── Middleware/
+│   │   │   └── Requests/
+│   │   ├── Models/
+│   │   ├── Services/
+│   │   └── Exports/
+│   ├── config/
+│   ├── database/
+│   ├── routes/
+│   ├── storage/
+│   └── tests/
+├── frontend/               # Vue.js Application
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   │   ├── shop/       # Shop-first components
+│   │   │   ├── cart/
+│   │   │   ├── customer/
+│   │   │   ├── staff/
+│   │   │   └── admin/
+│   │   ├── composables/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── router/
+│   │   ├── stores/
+│   │   └── services/
+│   └── public/
+├── docs/
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 14. Success Metrics
 
 | Metric | Target |
 |--------|--------|
-| Page Load Time | < 2 seconds |
+| Page Load Time (Shop) | < 1.5 seconds |
+| Time to First Product View | Instant (no landing page) |
 | Mobile Responsiveness | 100% functionality |
 | Uptime | 99.9% |
 | Order Processing Time | < 24 hours |
 | Customer Satisfaction | > 4.5/5 rating |
-| Cart Abandonment | < 30% |
+| Cart Abandonment | < 25% |
+| Currency Conversion Accuracy | 99.99% |
 
 ---
 
-## 13. Document Information
+## 15. Document Information
 
 | Field | Value |
 |-------|-------|
-| **Document Version** | 1.0 |
+| **Document Version** | 2.0 |
 | **Created Date** | December 12, 2025 |
+| **Last Updated** | December 12, 2025 |
 | **Author** | bguvava |
-| **Status** | Draft |
-| **Next Review** | Upon project kickoff |
+| **Status** | Draft - Pending Tech Stack Decision |
+| **Next Review** | Upon backend framework selection |
+
+---
+
+## 16. Decision Checklist
+
+Before proceeding, please confirm:
+
+- [ ] **Backend Framework**: Laravel (recommended) or Node.js?
+- [ ] **Hosting**: CyberPanel VPS (recommended) or alternative?
+- [ ] **Currency Default**: AU$ with US$ option confirmed?
+- [ ] **Roles Confirmed**: Guest, Customer, Staff, Admin?
+- [ ] **Shop-First Approach**: No landing page confirmed?
 
 ---
 
