@@ -1,0 +1,259 @@
+# Zambezi Meats - AI Agent Project Settings
+# This file maintains development context for AI coding agents
+
+# =============================================================================
+# PROJECT IDENTITY
+# =============================================================================
+project:
+  name: "Zambezi Meats Online Butchery Store"
+  codename: "zambezi-meats"
+  version: "1.0.0-mvp"
+  status: "development"
+
+company:
+  name: "Zambezi Meats"
+  address: "6/1053 Old Princes Highway, Engadine, NSW 2233, Australia"
+  service_area: "Menangle Park, Engadine, City of Campbelltown, Sydney, Australia"
+  website: "www.zambezimeats.com"
+
+developer:
+  name: "bguvava"
+  website: "www.bguvava.com"
+
+branding:
+  logo_path: ".github/official_logo.png"
+  primary_colors:
+    - "#8B0000" # Dark Red (from logo)
+    - "#2C1810" # Dark Brown
+    - "#F5F5DC" # Beige/Cream
+  style: "high-end/gourmet"
+
+# =============================================================================
+# TECHNOLOGY STACK
+# =============================================================================
+backend:
+  framework: "Laravel"
+  version: "12.x"
+  language: "PHP"
+  language_version: "8.2+"
+  authentication: "Laravel Sanctum (cookie-based SPA)"
+  orm: "Eloquent"
+  api_prefix: "/api/v1"
+  realtime: "Server-Sent Events (SSE)"
+  queue: "Laravel Queue with Supervisor"
+  scheduler: "Laravel Scheduler with Cron"
+
+frontend:
+  framework: "Vue.js"
+  version: "3"
+  api_style: "Composition API"
+  build_tool: "Vite"
+  css_framework: "Tailwind CSS"
+  ui_components:
+    - "shadcn/ui"
+    - "Headless UI"
+  state_management: "Pinia"
+  http_client: "Axios"
+  icons: "Lucide Icons"
+  charts: "Chart.js"
+
+database:
+  engine: "MySQL"
+  version: "8.0"
+  name: "my_zambezimeats"
+  charset: "utf8mb4"
+  collation: "utf8mb4_unicode_ci"
+
+infrastructure:
+  hosting: "CyberPanel VPS"
+  web_server: "OpenLiteSpeed"
+  os: "Ubuntu 22.04 LTS"
+  ssl: "Let's Encrypt"
+  node_version: "20 LTS"
+
+payments:
+  gateways:
+    - name: "Stripe"
+      currencies: ["AUD", "USD"]
+    - name: "PayPal"
+      currencies: ["AUD", "USD"]
+    - name: "Afterpay"
+      currencies: ["AUD"]
+    - name: "Cash on Delivery"
+      currencies: ["AUD"]
+  default_currency: "AUD"
+  secondary_currency: "USD"
+  exchange_rate_api: "ExchangeRate-API"
+
+# =============================================================================
+# PROJECT STRUCTURE
+# =============================================================================
+directories:
+  backend: "/backend"
+  frontend: "/frontend"
+  documentation: "/docs"
+  tests: "/tests"
+  github: "/.github"
+  prompts: "/.github/prompts"
+  mvp_docs: "/.github/prompts/mvp"
+
+documentation:
+  mvp_index: ".github/prompts/product_mvp.md"
+  mvp_parts:
+    - ".github/prompts/mvp/part1-foundation.md"
+    - ".github/prompts/mvp/part2-auth-landing.md"
+    - ".github/prompts/mvp/part3-shop-cart.md"
+    - ".github/prompts/mvp/part4-checkout.md"
+    - ".github/prompts/mvp/part5-customer-staff.md"
+    - ".github/prompts/mvp/part6-admin.md"
+    - ".github/prompts/mvp/part7-inventory-delivery.md"
+    - ".github/prompts/mvp/part8-reports-settings.md"
+    - ".github/prompts/mvp/part9-deployment-checklist.md"
+  coding_style: ".github/prompts/coding_style.json"
+  copilot_instructions: ".github/prompts/copilot_instructions.md"
+  skills: ".github/prompts/skills.md"
+  user_requirements: ".github/user_requirements.txt"
+
+# =============================================================================
+# ARCHITECTURE PRINCIPLES
+# =============================================================================
+architecture:
+  type: "Single Page Application (SPA)"
+  approach: "Shop-First (no landing page barrier)"
+  design: "Dashboard-centric with modal windows"
+  responsive: "Mobile-first"
+
+api:
+  versioning: true
+  current_version: "v1"
+  format: "RESTful JSON"
+  authentication: "Cookie-based (Sanctum)"
+  csrf_protection: true
+  rate_limiting: true
+
+# =============================================================================
+# USER ROLES & PERMISSIONS
+# =============================================================================
+roles:
+  - name: "guest"
+    description: "Unauthenticated visitor"
+    access: "Public pages only"
+
+  - name: "customer"
+    description: "Registered shopper"
+    access: "Shop, orders, profile, wishlist"
+
+  - name: "staff"
+    description: "Zambezi Meats employee"
+    access: "Orders, deliveries, waste logging"
+
+  - name: "admin"
+    description: "Full system control"
+    access: "All features + settings"
+
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+security:
+  session_timeout: 5 # minutes
+  auto_logout: true
+  password_hashing: "bcrypt"
+  csrf_protection: true
+  xss_protection: true
+  sql_injection_prevention: true
+  https_required: true
+
+# =============================================================================
+# BUSINESS RULES
+# =============================================================================
+business:
+  operating_hours: "7am - 6pm (Mon-Sun)"
+  minimum_order: 100 # AUD
+  free_delivery_threshold: 100 # AUD
+  delivery_fee_per_km: 0.15 # AUD (for areas outside zones)
+  stock_reserve_duration: 15 # minutes during checkout
+
+delivery:
+  zones_required: true
+  calculate_by_distance: true
+  store_address: "6/1053 Old Princes Highway, Engadine, NSW 2233"
+  postcodes_free_delivery: [] # Defined in database
+
+inventory:
+  real_time_tracking: true
+  low_stock_alerts: true
+  auto_deduct_on_order: true
+  restore_on_cancel: true
+
+# =============================================================================
+# TESTING REQUIREMENTS
+# =============================================================================
+testing:
+  coverage_target: 100 # percent
+  types:
+    - "Unit tests"
+    - "Integration tests"
+    - "E2E tests"
+  frameworks:
+    backend: "PHPUnit"
+    frontend: "Vitest"
+    e2e: "Playwright"
+
+# =============================================================================
+# DEVELOPMENT WORKFLOW
+# =============================================================================
+workflow:
+  git_branch_strategy: "feature-branch"
+  commit_style: "conventional"
+  code_review: required
+  ci_cd: true
+
+conventions:
+  file_naming: "kebab-case"
+  component_naming: "PascalCase"
+  function_naming: "camelCase"
+  constant_naming: "UPPER_SNAKE_CASE"
+  database_naming: "snake_case"
+
+# =============================================================================
+# MVP REQUIREMENTS SUMMARY
+# =============================================================================
+requirements:
+  total: 396
+  modules: 17
+  priority_levels:
+    P0_critical:
+      ["Foundation", "Auth", "Shop", "Cart", "Checkout", "Deployment"]
+    P1_high:
+      [
+        "Customer Dashboard",
+        "Staff Dashboard",
+        "Admin",
+        "Inventory",
+        "Delivery",
+      ]
+    P2_medium: ["Reports", "Settings"]
+
+# =============================================================================
+# AI AGENT INSTRUCTIONS
+# =============================================================================
+ai_instructions:
+  always_check:
+    - "product_mvp.md for requirement references"
+    - "coding_style.json for formatting"
+    - "This settings.yml for project context"
+
+  never_do:
+    - "Change database name from my_zambezimeats"
+    - "Use WebSockets instead of SSE"
+    - "Remove CSRF protection"
+    - "Skip test coverage"
+    - "Use bulk operations except for Activity Logs"
+
+  best_practices:
+    - "Follow Laravel conventions"
+    - "Use Vue 3 Composition API"
+    - "Write tests for all features"
+    - "Document all API endpoints"
+    - "Handle all errors gracefully"
+    - "Maintain consistent code style"

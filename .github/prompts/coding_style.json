@@ -1,0 +1,434 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Zambezi Meats Coding Style Guide",
+  "description": "Coding standards for AI agents developing the Zambezi Meats online butchery store",
+  "version": "1.0.0",
+  
+  "general": {
+    "indentation": {
+      "style": "spaces",
+      "size": 4,
+      "php": 4,
+      "javascript": 2,
+      "vue": 2,
+      "css": 2,
+      "json": 2,
+      "yaml": 2
+    },
+    "lineEndings": "LF",
+    "maxLineLength": 120,
+    "trailingNewline": true,
+    "trimTrailingWhitespace": true,
+    "charset": "utf-8"
+  },
+
+  "php": {
+    "version": "8.2+",
+    "standard": "PSR-12",
+    "strictTypes": true,
+    "declarationFormat": "<?php\n\ndeclare(strict_types=1);",
+    
+    "naming": {
+      "classes": "PascalCase",
+      "methods": "camelCase",
+      "functions": "camelCase",
+      "variables": "camelCase",
+      "constants": "UPPER_SNAKE_CASE",
+      "properties": "camelCase",
+      "interfaces": "PascalCaseInterface",
+      "traits": "PascalCaseTrait",
+      "enums": "PascalCase"
+    },
+    
+    "fileNaming": {
+      "classes": "PascalCase.php",
+      "controllers": "PascalCaseController.php",
+      "models": "PascalCase.php",
+      "migrations": "yyyy_mm_dd_hhmmss_snake_case.php",
+      "seeders": "PascalCaseSeeder.php",
+      "factories": "PascalCaseFactory.php",
+      "requests": "PascalCaseRequest.php",
+      "resources": "PascalCaseResource.php",
+      "policies": "PascalCasePolicy.php",
+      "events": "PascalCaseEvent.php",
+      "listeners": "PascalCaseListener.php",
+      "jobs": "PascalCaseJob.php",
+      "mail": "PascalCaseMail.php",
+      "notifications": "PascalCaseNotification.php"
+    },
+    
+    "laravel": {
+      "routeNaming": "kebab-case",
+      "apiVersioning": "/api/v1/",
+      "controllerMethods": ["index", "show", "store", "update", "destroy"],
+      "resourceResponses": true,
+      "formRequests": true,
+      "policyAuthorization": true,
+      
+      "modelConventions": {
+        "tableName": "snake_case_plural",
+        "primaryKey": "id",
+        "timestamps": true,
+        "softDeletes": "where_appropriate",
+        "fillable": "explicit",
+        "guarded": ["id"],
+        "casts": "explicit_types",
+        "relationships": "camelCase"
+      },
+      
+      "controllerStructure": {
+        "order": [
+          "constructor",
+          "index",
+          "show",
+          "store",
+          "update",
+          "destroy",
+          "custom_methods"
+        ],
+        "dependencyInjection": true,
+        "singleResponsibility": true
+      },
+      
+      "servicePattern": {
+        "use": true,
+        "location": "app/Services",
+        "naming": "PascalCaseService.php"
+      },
+      
+      "repositoryPattern": {
+        "use": false,
+        "reason": "Using Eloquent directly for MVP simplicity"
+      }
+    },
+    
+    "docBlocks": {
+      "required": true,
+      "format": "PHPDoc",
+      "includeTypes": true,
+      "includeDescription": true,
+      "example": "/**\n * Short description.\n *\n * @param Type $param Description\n * @return Type Description\n * @throws Exception Description\n */"
+    },
+    
+    "imports": {
+      "order": ["PHP classes", "Laravel classes", "Third-party", "App classes"],
+      "grouping": true,
+      "alphabetize": true,
+      "fullyQualified": false
+    }
+  },
+
+  "javascript": {
+    "version": "ES2022+",
+    "moduleSystem": "ESM",
+    "semicolons": false,
+    "quotes": "single",
+    "trailingCommas": "es5",
+    
+    "naming": {
+      "variables": "camelCase",
+      "functions": "camelCase",
+      "classes": "PascalCase",
+      "constants": "UPPER_SNAKE_CASE",
+      "components": "PascalCase",
+      "composables": "useCamelCase",
+      "stores": "useCamelCaseStore",
+      "events": "kebab-case"
+    },
+    
+    "fileNaming": {
+      "components": "PascalCase.vue",
+      "composables": "useCamelCase.js",
+      "stores": "camelCase.js",
+      "utils": "camelCase.js",
+      "types": "camelCase.ts",
+      "tests": "*.spec.js"
+    },
+    
+    "preferences": {
+      "constOverLet": true,
+      "arrowFunctions": true,
+      "templateLiterals": true,
+      "destructuring": true,
+      "spreadOperator": true,
+      "optionalChaining": true,
+      "nullishCoalescing": true,
+      "asyncAwait": true
+    }
+  },
+
+  "vue": {
+    "version": "3",
+    "apiStyle": "Composition API",
+    "scriptSetup": true,
+    "typescript": false,
+    
+    "componentStructure": {
+      "order": [
+        "script setup",
+        "template",
+        "style scoped"
+      ],
+      "scriptOrder": [
+        "imports",
+        "props",
+        "emits",
+        "composables",
+        "reactive state",
+        "computed",
+        "watchers",
+        "lifecycle hooks",
+        "methods"
+      ]
+    },
+    
+    "naming": {
+      "components": "PascalCase",
+      "props": "camelCase",
+      "emits": "camelCase",
+      "slots": "kebab-case",
+      "refs": "camelCaseRef",
+      "computed": "camelCase"
+    },
+    
+    "templateRules": {
+      "selfClosingTags": true,
+      "attributeOrder": [
+        "v-if/v-else-if/v-else",
+        "v-for",
+        "v-show",
+        "id",
+        "ref",
+        "class",
+        "v-model",
+        "v-bind",
+        "v-on",
+        "other"
+      ],
+      "maxAttributesPerLine": 3,
+      "multilineAttributes": true
+    },
+    
+    "stateManagement": {
+      "library": "Pinia",
+      "storeStructure": {
+        "state": "ref/reactive",
+        "getters": "computed",
+        "actions": "functions"
+      }
+    }
+  },
+
+  "css": {
+    "framework": "Tailwind CSS",
+    "preprocessor": "none",
+    "methodology": "utility-first",
+    
+    "tailwind": {
+      "configFile": "tailwind.config.js",
+      "customColors": {
+        "primary": "from logo palette",
+        "secondary": "complementary",
+        "accent": "highlight color",
+        "success": "green tones",
+        "warning": "amber tones",
+        "error": "red tones"
+      },
+      "classOrder": [
+        "layout",
+        "positioning",
+        "display",
+        "sizing",
+        "spacing",
+        "typography",
+        "backgrounds",
+        "borders",
+        "effects",
+        "transitions",
+        "responsive"
+      ]
+    },
+    
+    "customCSS": {
+      "when": "complex animations or Tailwind limitations",
+      "scope": "scoped to component",
+      "naming": "BEM if needed"
+    }
+  },
+
+  "database": {
+    "engine": "MySQL 8.0",
+    "naming": {
+      "tables": "snake_case_plural",
+      "columns": "snake_case",
+      "primaryKey": "id",
+      "foreignKeys": "singular_table_id",
+      "pivotTables": "singular_singular_alphabetical",
+      "indexes": "table_column_index",
+      "uniqueConstraints": "table_column_unique"
+    },
+    
+    "conventions": {
+      "timestamps": ["created_at", "updated_at"],
+      "softDeletes": "deleted_at",
+      "booleans": "is_prefix or has_prefix",
+      "status": "enum or string",
+      "money": "decimal(10,2)",
+      "uuid": "char(36) or uuid type"
+    },
+    
+    "migrations": {
+      "oneChangePerMigration": true,
+      "descriptiveNames": true,
+      "rollbackSafe": true
+    }
+  },
+
+  "api": {
+    "style": "RESTful",
+    "versioning": "/api/v1/",
+    
+    "endpoints": {
+      "naming": "kebab-case-plural",
+      "methods": {
+        "GET": "retrieve",
+        "POST": "create",
+        "PUT": "full update",
+        "PATCH": "partial update",
+        "DELETE": "remove"
+      }
+    },
+    
+    "responses": {
+      "format": "JSON",
+      "wrapper": {
+        "success": {
+          "data": "payload",
+          "message": "optional",
+          "meta": "pagination if applicable"
+        },
+        "error": {
+          "message": "human readable",
+          "errors": "field-specific if validation"
+        }
+      },
+      "statusCodes": {
+        "200": "Success",
+        "201": "Created",
+        "204": "No Content",
+        "400": "Bad Request",
+        "401": "Unauthorized",
+        "403": "Forbidden",
+        "404": "Not Found",
+        "419": "CSRF Token Mismatch",
+        "422": "Validation Error",
+        "429": "Too Many Requests",
+        "500": "Server Error"
+      }
+    },
+    
+    "pagination": {
+      "default": 15,
+      "max": 100,
+      "parameters": ["page", "per_page"],
+      "response": {
+        "current_page": "number",
+        "last_page": "number",
+        "per_page": "number",
+        "total": "number",
+        "data": "array"
+      }
+    }
+  },
+
+  "testing": {
+    "coverage": "100%",
+    
+    "php": {
+      "framework": "PHPUnit",
+      "naming": "test_description_in_snake_case",
+      "structure": {
+        "arrange": "Setup",
+        "act": "Execute",
+        "assert": "Verify"
+      },
+      "factories": true,
+      "databaseRefresh": true
+    },
+    
+    "javascript": {
+      "framework": "Vitest",
+      "naming": "describe/it pattern",
+      "mocking": "vi.mock()"
+    },
+    
+    "e2e": {
+      "framework": "Playwright",
+      "coverage": "critical paths"
+    }
+  },
+
+  "git": {
+    "branchNaming": {
+      "feature": "feature/short-description",
+      "bugfix": "bugfix/short-description",
+      "hotfix": "hotfix/short-description",
+      "release": "release/version"
+    },
+    
+    "commitMessages": {
+      "format": "conventional",
+      "types": [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "test",
+        "chore",
+        "perf"
+      ],
+      "example": "feat(shop): add product filtering by category"
+    }
+  },
+
+  "documentation": {
+    "code": {
+      "inlineComments": "explain why, not what",
+      "docBlocks": "all public methods",
+      "readme": "each module"
+    },
+    
+    "api": {
+      "format": "OpenAPI/Swagger",
+      "location": "/docs/api/"
+    }
+  },
+
+  "errorHandling": {
+    "php": {
+      "customExceptions": true,
+      "globalHandler": true,
+      "logging": "all errors",
+      "userMessages": "friendly"
+    },
+    
+    "javascript": {
+      "tryCatch": "async operations",
+      "errorBoundaries": "component level",
+      "globalHandler": "axios interceptors",
+      "userFeedback": "toast notifications"
+    }
+  },
+
+  "security": {
+    "validation": {
+      "serverSide": "always",
+      "clientSide": "UX only"
+    },
+    "sanitization": "all user input",
+    "csrf": "all state-changing requests",
+    "xss": "escape all output",
+    "sqlInjection": "prepared statements only"
+  }
+}

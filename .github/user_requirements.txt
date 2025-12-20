@@ -1,6 +1,5 @@
 Company Name: Zambezi Meats
-Address: 6/1053 Old Princes Highway, Engadine, NSW 2233, Australia
-Service Area:  Menangle Park + Engadine + City of Campbelltown + Sydney + Australia
+Location:  Menangle Park, City of Campbelltown + Sydney, Australia
 Developer: bguvava (www.bguvava.com)
 Target Market: Locals in Sydney and surrounding areas/tows/cities
 
@@ -14,7 +13,7 @@ Available info and requirements:
 5. There is no product customisation required when customers are buying
 6. The website must track live inventory to prevent overselling
 7. Business operating hours are 7am-6pm. No slot system required 
-8. Delivery fees are free on orders over $100 to specified neighborhoods (postcode areas). Delivery fee for suburbs outside specified neighbourhoods will be calculated based in distance from the shop (for areas far and outside the city its 15 cents per kilometre)
+8. Delivery fees are free on orders over $100 to specified neighbourhoods (postcode areas). Delivery fee for suburbs outside specified neighbourhoods will be calculated based in distance from the shop (for areas far and outside the city its 15 cents per kilometre)
 9. Minimum order for delivery is, $100
 10. Payment methods accepted are cash and online payments such as Stripe/Paypal/Visa/Mastercard and Afterpay. 
 11. For all order alerts - email to manager + dashboard alerts to the store
@@ -49,20 +48,3 @@ The back-end system should focus on operational efficiency, inventory management
 - Secure payment processing & financial reporting: Management of all monetary transactions, including tax invoices and tracking earnings/payouts.
 
 ---
-#Core Structural Elements for the front page design:
--Compelling Headline & Supporting Subheadline: The headline should immediately grab attention and clearly state the core offer and primary benefit (the value proposition). The subheadline provides brief, supporting details.
-- Single, Clear Call to Action (CTA): The page should focus on one primary goal, with a visually prominent, action-oriented CTA button (the main attraction/offers for this app) placed strategically above the fold and potentially repeated further down the page.
-- Visually Appealing & Relevant Media: High-quality images that show the product/service in context can significantly boost engagement and comprehension. 
-
-#Modern Design and User Experience (UX)
-- Clean, Minimalist Layout & White Space: A clutter-free design using ample white space prevents visitor overwhelm, guides the eye toward the CTA, and makes the content easy to scan.
-- Mobile Responsiveness and Fast Loading Speed: A "mobile-first" design approach is essential, ensuring the page functions flawlessly and loads quickly on smartphones and tablets. Slow load times can kill conversions.
-- Intuitive Visual Hierarchy: Content should be structured logically using layout, color contrast, and varying font sizes to guide the user's attention from the headline to the supporting details and finally to the CTA.
-- Interactive Elements: Micro-interactions, subtle animations, or embedded interactive tools can make the experience dynamic and increase engagement. 
-
-#Trust and Persuasion:
-- Social Proof & Trust Signals: Building credibility is vital. Include authentic security badges and security to reassure visitors.
-- Benefit-Oriented Copy: The text should be concise and focus on the benefits and outcomes for the user, rather than just a list of features.
-
----
-

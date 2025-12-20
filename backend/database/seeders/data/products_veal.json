@@ -1,0 +1,86 @@
+[
+    {
+        "name": "Veal Leg Steak",
+        "category_slug": "beef-steaks",
+        "short_description": "Premium tender veal leg steaks, exceptionally lean",
+        "description": "Our veal leg steaks are cut from premium quality veal, offering exceptional tenderness and delicate flavor. These lean steaks are perfect for pan-frying, grilling, or schnitzel preparation. Veal's naturally tender texture and mild flavor make it a sophisticated choice for special occasions. Each steak is carefully trimmed to ensure the highest quality.",
+        "price_aud": 42.99,
+        "unit": "kg",
+        "weight_kg": 0.4,
+        "stock": 60,
+        "is_featured": true,
+        "image_path": "/images/products/veal/veal-leg-steak.jpg"
+    },
+    {
+        "name": "Crumbed Veal Steak",
+        "category_slug": "beef-steaks",
+        "short_description": "Premium veal steaks, pre-crumbed and ready to cook",
+        "description": "Our crumbed veal steaks are restaurant-quality cuts that are pre-crumbed for your convenience. Simply pan-fry or bake for a golden, crispy exterior and tender, juicy interior. Perfect for traditional schnitzel or as an elegant main course. Save time without compromising on quality or flavor.",
+        "price_aud": 39.99,
+        "unit": "kg",
+        "weight_kg": 0.45,
+        "stock": 70,
+        "is_featured": true,
+        "image_path": "/images/products/veal/crumbed-veal-steak.jpg"
+    },
+    {
+        "name": "Veal Chops",
+        "category_slug": "beef-steaks",
+        "short_description": "Tender veal chops with delicate flavor profile",
+        "description": "Our veal chops are cut from premium quality veal, offering a delicate flavor and tender texture that sets them apart. These chops are ideal for grilling, pan-frying, or oven-roasting. The natural tenderness of veal means quick cooking times and consistently excellent results. A sophisticated alternative to traditional pork or lamb chops.",
+        "price_aud": 34.99,
+        "unit": "kg",
+        "weight_kg": 0.5,
+        "stock": 55,
+        "is_featured": false,
+        "image_path": "/images/products/veal/veal-chops.jpg"
+    },
+    {
+        "name": "Lean Diced Veal",
+        "category_slug": "beef-steaks",
+        "short_description": "Premium diced veal, perfect for gourmet dishes",
+        "description": "Our lean diced veal is carefully trimmed and cubed for elegant stews, blanquettes, or gourmet casseroles. The natural tenderness of veal means shorter cooking times while still achieving melt-in-your-mouth results. Perfect for French-inspired cuisine or any recipe calling for premium diced meat.",
+        "price_aud": 39.99,
+        "unit": "kg",
+        "weight_kg": 0.5,
+        "stock": 50,
+        "is_featured": false,
+        "image_path": "/images/products/veal/lean-diced-veal.jpg"
+    },
+    {
+        "name": "Veal/Veg Rissoles",
+        "category_slug": "beef-specialty-cuts",
+        "short_description": "Gourmet veal and vegetable rissoles, handmade fresh",
+        "description": "Our veal and vegetable rissoles combine premium veal mince with fresh vegetables for a gourmet twist on a classic favorite. Handmade in-house, these rissoles are perfect for a quick, healthy meal. Simply pan-fry, grill, or bake for a delicious dinner the whole family will love.",
+        "price_aud": 19.99,
+        "unit": "kg",
+        "weight_kg": 0.6,
+        "stock": 80,
+        "is_featured": false,
+        "image_path": "/images/products/veal/veal-veg-rissoles.jpg"
+    },
+    {
+        "name": "Veal Roast",
+        "category_slug": "beef-roasts",
+        "short_description": "Premium veal roast, perfect for special occasions",
+        "description": "Our veal roast is a show-stopping centerpiece for any special meal. This premium cut offers delicate flavor and exceptional tenderness. Perfect for Sunday dinners or festive celebrations, veal roast cooks relatively quickly while remaining moist and tender. An elegant alternative to traditional roasts.",
+        "price_aud": 30.99,
+        "unit": "kg",
+        "weight_kg": 1.2,
+        "stock": 40,
+        "is_featured": true,
+        "image_path": "/images/products/veal/veal-roast.jpg"
+    },
+    {
+        "name": "Veal Italiano",
+        "category_slug": "beef-steaks",
+        "short_description": "Veal cutlets with Italian-inspired seasoning",
+        "description": "Our Veal Italiano features premium veal cutlets seasoned with our signature Italian herb blend. These cutlets are perfect for quick pan-frying or grilling, bringing authentic Italian flavors to your table. The tender veal pairs beautifully with the aromatic herbs for a restaurant-quality meal at home.",
+        "price_aud": 25.99,
+        "unit": "kg",
+        "weight_kg": 0.45,
+        "stock": 65,
+        "is_featured": false,
+        "image_path": "/images/products/veal/veal-italiano.jpg"
+    }
+]

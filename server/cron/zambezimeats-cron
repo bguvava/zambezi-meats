@@ -1,0 +1,73 @@
+# ==============================================================================
+
+# Zambezi Meats - Cron Configuration
+
+# ==============================================================================
+
+# DEP-013: Set up Laravel scheduler
+
+# Cron job for Laravel scheduler
+
+# ==============================================================================
+
+#
+
+# Installation:
+
+# sudo crontab -e
+
+# # Add the line below:
+
+# \* \* \* \* \* cd /var/www/zambezimeats/backend/current && php artisan schedule:run >> /dev/null 2>&1
+
+#
+
+# Or copy this file:
+
+# sudo cp zambezimeats-cron /etc/cron.d/zambezimeats
+
+# sudo chmod 644 /etc/cron.d/zambezimeats
+
+#
+
+# ==============================================================================
+
+# Zambezi Meats Laravel Scheduler
+
+# Runs every minute to check for scheduled tasks
+
+- - - - - www-data cd /var/www/zambezimeats/backend/current && php artisan schedule:run >> /var/www/zambezimeats/logs/scheduler.log 2>&1
+
+# Daily Database Backup at 2:00 AM
+
+0 2 \* \* \* www-data /var/www/zambezimeats/scripts/backup.sh auto >> /var/www/zambezimeats/logs/backup-cron.log 2>&1
+
+# Weekly Full Backup on Sunday at 3:00 AM
+
+0 3 \* \* 0 www-data /var/www/zambezimeats/scripts/backup.sh weekly >> /var/www/zambezimeats/logs/backup-cron.log 2>&1
+
+# Monthly Full Backup on 1st at 3:30 AM
+
+30 3 1 \* \* www-data /var/www/zambezimeats/scripts/backup.sh monthly >> /var/www/zambezimeats/logs/backup-cron.log 2>&1
+
+# Clear old log files (keep 30 days)
+
+0 4 \* \* \* www-data find /var/www/zambezimeats/logs -type f -mtime +30 -delete
+
+# Clear Laravel cache files weekly on Sunday at 4:00 AM
+
+0 4 \* \* 0 www-data cd /var/www/zambezimeats/backend/current && php artisan cache:clear >> /dev/null 2>&1
+
+# ==============================================================================
+
+# Note: The Laravel scheduler handles these internal tasks automatically:
+
+# - Exchange rate updates (daily at midnight)
+
+# - Low stock alerts (every 6 hours)
+
+# - Report generation (as configured)
+
+# - Session cleanup (as configured)
+
+# ==============================================================================

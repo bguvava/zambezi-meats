@@ -1,0 +1,145 @@
+{
+  // =============================================================================
+  // ZAMBEZI MEATS - VS CODE SETTINGS
+  // =============================================================================
+  // MCP Servers for AI-Assisted Development
+  // =============================================================================
+
+  "mcp.servers": {
+    // File system operations
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "@anthropic/mcp-server-filesystem",
+        "c:/xampp/htdocs/Zambezi-Meats"
+      ]
+    },
+
+    // MySQL database management
+    "mysql": {
+      "command": "npx",
+      "args": ["@benborber/mcp-server-mysql"],
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_USER": "root",
+        "MYSQL_PASSWORD": "",
+        "MYSQL_DATABASE": "my_zambezimeats"
+      }
+    },
+
+    // HTTP/API testing
+    "fetch": {
+      "command": "npx",
+      "args": ["@anthropic/mcp-server-fetch"]
+    },
+
+    // Stripe payment integration
+    "stripe": {
+      "command": "npx",
+      "args": ["-y", "@stripe/mcp", "--tools=all"],
+      "env": {
+        "STRIPE_SECRET_KEY": "sk_test_YOUR_API_KEY"
+      }
+    }
+  },
+
+  // =============================================================================
+  // Editor Settings
+  // =============================================================================
+
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+
+  // =============================================================================
+  // PHP Settings
+  // =============================================================================
+
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+    "editor.tabSize": 4
+  },
+
+  // =============================================================================
+  // Vue.js Settings
+  // =============================================================================
+
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar",
+    "editor.tabSize": 2
+  },
+
+  // =============================================================================
+  // JavaScript/TypeScript Settings
+  // =============================================================================
+
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  // =============================================================================
+  // File Associations
+  // =============================================================================
+
+  "files.associations": {
+    "*.blade.php": "blade"
+  },
+
+  // =============================================================================
+  // Tailwind CSS
+  // =============================================================================
+
+  "tailwindCSS.includeLanguages": {
+    "vue": "html",
+    "vue-html": "html"
+  },
+
+  "tailwindCSS.experimental.classRegex": [
+    ["class\\s*:\\s*['\"]([^'\"]*)['\"]", "([^\\s'\"]*)"],
+    ["\\bclass\\s*=\\s*['\"]([^'\"]*)['\"]", "([^\\s'\"]*)"]
+  ],
+
+  // =============================================================================
+  // ESLint
+  // =============================================================================
+
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue"
+  ],
+
+  // =============================================================================
+  // Git Settings
+  // =============================================================================
+
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+
+  // =============================================================================
+  // Project-Specific Settings
+  // =============================================================================
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/dist": true,
+    "**/storage": true,
+    "**/bootstrap/cache": true
+  },
+
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/vendor": true
+  }
+}
