@@ -14,8 +14,11 @@ declare(strict_types=1);
  * @requirement CART-019 Cart API endpoints
  */
 
+use App\Http\Controllers\Api\ContactMessageController;
+use App\Http\Controllers\Api\NewsletterSubscriptionController;
 use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BlogController;
 use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CheckoutController;
@@ -23,6 +26,7 @@ use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\DeliveryController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\InventoryController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ReportController;
@@ -109,6 +113,37 @@ Route::prefix('v1')->group(function () {
                 'updated_at' => now()->toIso8601String(),
             ]);
         })->name('api.v1.public.exchange-rates');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Contact & Newsletter Routes (Public)
+    |--------------------------------------------------------------------------
+    |
+    | @requirement ISSUE-004 Contact us form and newsletter subscriptions
+    */
+    Route::post('/contact', [ContactMessageController::class, 'store'])
+        ->name('api.v1.contact.store');
+
+    Route::post('/newsletter/subscribe', [NewsletterSubscriptionController::class, 'subscribe'])
+        ->name('api.v1.newsletter.subscribe');
+
+    Route::get('/newsletter/unsubscribe/{token}', [NewsletterSubscriptionController::class, 'unsubscribe'])
+        ->name('api.v1.newsletter.unsubscribe');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Blog Routes (Public)
+    |--------------------------------------------------------------------------
+    |
+    | Public blog routes for listing and viewing blog posts
+    */
+    Route::prefix('blog')->group(function () {
+        Route::get('/', [BlogController::class, 'index'])
+            ->name('api.v1.blog.index');
+
+        Route::get('/{slug}', [BlogController::class, 'show'])
+            ->name('api.v1.blog.show');
     });
 
     /*
@@ -227,6 +262,9 @@ Route::prefix('v1')->group(function () {
 
             Route::post('/refresh', [AuthController::class, 'refresh'])
                 ->name('api.v1.auth.refresh');
+
+            Route::post('/unlock', [AuthController::class, 'unlock'])
+                ->name('api.v1.auth.unlock');
         });
     });
 
@@ -240,6 +278,58 @@ Route::prefix('v1')->group(function () {
         // User activity history (users can view their own)
         Route::get('/users/{user}/activity', [UserController::class, 'getActivityHistory'])
             ->name('api.v1.user.activity');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Profile Routes
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('profile')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\ProfileController::class, 'show'])
+                ->name('api.v1.profile.show');
+
+            Route::put('/', [\App\Http\Controllers\Api\V1\ProfileController::class, 'update'])
+                ->name('api.v1.profile.update');
+
+            Route::post('/avatar', [\App\Http\Controllers\Api\V1\ProfileController::class, 'uploadAvatar'])
+                ->name('api.v1.profile.upload-avatar');
+
+            Route::delete('/avatar', [\App\Http\Controllers\Api\V1\ProfileController::class, 'deleteAvatar'])
+                ->name('api.v1.profile.delete-avatar');
+
+            Route::post('/change-password', [\App\Http\Controllers\Api\V1\ProfileController::class, 'changePassword'])
+                ->name('api.v1.profile.change-password');
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notification Routes
+        |--------------------------------------------------------------------------
+        |
+        | @requirement NOTIF-001 List user notifications with pagination
+        | @requirement NOTIF-002 Mark notifications as read
+        | @requirement NOTIF-003 Delete notifications
+        | @requirement NOTIF-004 Get unread count
+        */
+        Route::prefix('notifications')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index'])
+                ->name('api.v1.notifications.index');
+
+            Route::get('/unread-count', [\App\Http\Controllers\Api\V1\NotificationController::class, 'unreadCount'])
+                ->name('api.v1.notifications.unread-count');
+
+            Route::post('/{notification}/read', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAsRead'])
+                ->name('api.v1.notifications.read');
+
+            Route::post('/read-all', [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAllAsRead'])
+                ->name('api.v1.notifications.read-all');
+
+            Route::delete('/{notification}', [\App\Http\Controllers\Api\V1\NotificationController::class, 'destroy'])
+                ->name('api.v1.notifications.destroy');
+
+            Route::delete('/read/all', [\App\Http\Controllers\Api\V1\NotificationController::class, 'deleteAllRead'])
+                ->name('api.v1.notifications.delete-all-read');
+        });
 
         /*
         |--------------------------------------------------------------------------
@@ -386,6 +476,8 @@ Route::prefix('v1')->group(function () {
                 ->name('api.v1.customer.tickets.show');
             Route::post('/tickets/{id}/reply', [CustomerController::class, 'replyToTicket'])
                 ->name('api.v1.customer.tickets.reply');
+            Route::delete('/tickets/{id}', [CustomerController::class, 'cancelTicket'])
+                ->name('api.v1.customer.tickets.cancel');
         });
 
         /*
@@ -445,6 +537,16 @@ Route::prefix('v1')->group(function () {
                 ->name('api.v1.staff.pickups.today');
             Route::put('/orders/{id}/picked-up', [StaffController::class, 'markAsPickedUp'])
                 ->name('api.v1.staff.orders.picked-up');
+
+            // Invoices (Read-Only)
+            Route::get('/invoices', [StaffController::class, 'getInvoices'])
+                ->name('api.v1.staff.invoices.index');
+            Route::get('/invoices/stats', [StaffController::class, 'getInvoiceStats'])
+                ->name('api.v1.staff.invoices.stats');
+            Route::get('/invoices/{id}', [StaffController::class, 'getInvoice'])
+                ->name('api.v1.staff.invoices.show');
+            Route::get('/invoices/{id}/pdf', [StaffController::class, 'downloadInvoicePDF'])
+                ->name('api.v1.staff.invoices.pdf');
         });
 
         // Admin routes
@@ -467,6 +569,18 @@ Route::prefix('v1')->group(function () {
             Route::post('/orders/{id}/refund', [AdminController::class, 'refundOrder'])
                 ->name('api.v1.admin.orders.refund');
 
+            // Invoice Management (Admin)
+            Route::get('/invoices', [AdminController::class, 'getInvoices'])
+                ->name('api.v1.admin.invoices.index');
+            Route::get('/invoices/stats', [AdminController::class, 'getInvoiceStats'])
+                ->name('api.v1.admin.invoices.stats');
+            Route::get('/invoices/{id}', [AdminController::class, 'getInvoice'])
+                ->name('api.v1.admin.invoices.show');
+            Route::put('/invoices/{id}/status', [AdminController::class, 'updateInvoiceStatus'])
+                ->name('api.v1.admin.invoices.status');
+            Route::get('/invoices/{id}/pdf', [AdminController::class, 'downloadInvoicePDF'])
+                ->name('api.v1.admin.invoices.pdf');
+
             // Customer Management (Admin only)
             Route::get('/customers', [AdminController::class, 'getCustomers'])
                 ->name('api.v1.admin.customers.index');
@@ -480,6 +594,22 @@ Route::prefix('v1')->group(function () {
                 ->name('api.v1.admin.products.delete');
             Route::delete('/categories/{id}', [AdminController::class, 'deleteCategory'])
                 ->name('api.v1.admin.categories.delete');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Blog Management Routes (Admin Only)
+            |--------------------------------------------------------------------------
+            */
+            Route::prefix('blog')->group(function () {
+                Route::post('/', [BlogController::class, 'store'])
+                    ->name('api.v1.admin.blog.store');
+
+                Route::put('/{id}', [BlogController::class, 'update'])
+                    ->name('api.v1.admin.blog.update');
+
+                Route::delete('/{id}', [BlogController::class, 'destroy'])
+                    ->name('api.v1.admin.blog.destroy');
+            });
         });
 
         // Admin & Staff routes for Product/Category Management
@@ -499,6 +629,8 @@ Route::prefix('v1')->group(function () {
                 ->name('api.v1.admin.products.adjust-stock');
             Route::get('/products/{id}/stock-history', [AdminController::class, 'getStockHistory'])
                 ->name('api.v1.admin.products.stock-history');
+            Route::post('/products/{id}/images', [AdminController::class, 'uploadProductImages'])
+                ->name('api.v1.admin.products.upload-images');
             Route::delete('/products/{id}/images/{imageId}', [AdminController::class, 'deleteProductImage'])
                 ->name('api.v1.admin.products.delete-image');
             Route::post('/products/{id}/images/reorder', [AdminController::class, 'reorderProductImages'])
@@ -513,6 +645,51 @@ Route::prefix('v1')->group(function () {
                 ->name('api.v1.admin.categories.store');
             Route::put('/categories/{id}', [AdminController::class, 'updateCategory'])
                 ->name('api.v1.admin.categories.update');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Messages Module Routes (Admin & Staff)
+            |--------------------------------------------------------------------------
+            |
+            | @requirement ISSUE-004 Messages module for admin and staff
+            */
+            Route::get('/messages', [ContactMessageController::class, 'index'])
+                ->name('api.v1.admin.messages.index');
+            Route::get('/messages/{message}', [ContactMessageController::class, 'show'])
+                ->name('api.v1.admin.messages.show');
+            Route::put('/messages/{message}', [ContactMessageController::class, 'update'])
+                ->name('api.v1.admin.messages.update');
+            Route::delete('/messages/{message}', [ContactMessageController::class, 'destroy'])
+                ->name('api.v1.admin.messages.destroy');
+            Route::get('/messages-stats', [ContactMessageController::class, 'stats'])
+                ->name('api.v1.admin.messages.stats');
+
+            Route::get('/subscriptions', [NewsletterSubscriptionController::class, 'index'])
+                ->name('api.v1.admin.subscriptions.index');
+            Route::delete('/subscriptions/{subscription}', [NewsletterSubscriptionController::class, 'destroy'])
+                ->name('api.v1.admin.subscriptions.destroy');
+            Route::get('/subscriptions-stats', [NewsletterSubscriptionController::class, 'stats'])
+                ->name('api.v1.admin.subscriptions.stats');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Support Tickets Management Routes (Admin & Staff)
+            |--------------------------------------------------------------------------
+            |
+            | @requirement MSG-001 Add Tickets/Helpdesk Tab
+            */
+            Route::get('/tickets', [AdminController::class, 'getTickets'])
+                ->name('api.v1.admin.tickets.index');
+            Route::get('/tickets/{id}', [AdminController::class, 'getTicket'])
+                ->name('api.v1.admin.tickets.show');
+            Route::put('/tickets/{id}/status', [AdminController::class, 'updateTicketStatus'])
+                ->name('api.v1.admin.tickets.status');
+            Route::post('/tickets/{id}/reply', [AdminController::class, 'replyToTicket'])
+                ->name('api.v1.admin.tickets.reply');
+            Route::delete('/tickets/{id}', [AdminController::class, 'deleteTicket'])
+                ->name('api.v1.admin.tickets.delete');
+            Route::get('/tickets-stats', [AdminController::class, 'getTicketStats'])
+                ->name('api.v1.admin.tickets.stats');
         });
 
         // Admin-only Service Delete operations

@@ -32,6 +32,7 @@ app.mount("#app");
 
 // Initialize stores after mounting
 import { useAuthStore, useCartStore, useCurrencyStore } from "./stores";
+import { initializeAppSettings } from "./stores/appSettings";
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
@@ -40,6 +41,11 @@ const currencyStore = useCurrencyStore();
 // Load persisted data
 cartStore.loadFromStorage();
 currencyStore.loadFromStorage();
+
+// Initialize app settings (fetches from API or cache)
+initializeAppSettings().catch((error) => {
+  console.log("Failed to load app settings:", error.message);
+});
 
 // Initialize auth state
 authStore.initialize().catch((error) => {

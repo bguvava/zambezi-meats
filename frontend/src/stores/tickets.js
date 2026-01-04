@@ -42,6 +42,11 @@ export const useTicketsStore = defineStore("tickets", () => {
       color: "gray",
       bgColor: "bg-gray-100 text-gray-800",
     },
+    cancelled: {
+      label: "Cancelled",
+      color: "red",
+      bgColor: "bg-red-100 text-red-800",
+    },
   };
 
   // Ticket priorities
@@ -217,6 +222,42 @@ export const useTicketsStore = defineStore("tickets", () => {
   }
 
   /**
+   * Cancel a ticket (soft delete by user)
+   * @param {number} ticketId - Ticket ID
+   */
+  async function cancelTicket(ticketId) {
+    isSaving.value = true;
+    saveError.value = null;
+
+    try {
+      const response = await api.delete(`/customer/tickets/${ticketId}`);
+
+      if (response.data.success) {
+        // Remove from local state
+        tickets.value = tickets.value.filter(
+          (ticket) => ticket.id !== ticketId
+        );
+
+        // Clear current ticket if it's the one being cancelled
+        if (currentTicket.value?.id === ticketId) {
+          currentTicket.value = null;
+        }
+      }
+
+      return {
+        success: true,
+        message: response.data.message || "Ticket cancelled successfully",
+      };
+    } catch (err) {
+      saveError.value =
+        err.response?.data?.message || "Failed to cancel ticket";
+      return { success: false, message: saveError.value };
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  /**
    * Get status config
    * @param {string} status - Status key
    */
@@ -296,6 +337,7 @@ export const useTicketsStore = defineStore("tickets", () => {
     fetchTicket,
     createTicket,
     replyToTicket,
+    cancelTicket,
     getStatusConfig,
     getPriorityConfig,
     clearCurrentTicket,

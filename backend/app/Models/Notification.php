@@ -33,6 +33,23 @@ class Notification extends Model
     public const TYPE_DELIVERY = 'delivery';
     public const TYPE_PROMOTION = 'promotion';
     public const TYPE_SYSTEM = 'system';
+    public const TYPE_MESSAGE = 'message';
+
+    /**
+     * All available notification types
+     *
+     * @return array<string>
+     */
+    public static function types(): array
+    {
+        return [
+            self::TYPE_ORDER,
+            self::TYPE_DELIVERY,
+            self::TYPE_PROMOTION,
+            self::TYPE_SYSTEM,
+            self::TYPE_MESSAGE,
+        ];
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -117,5 +134,13 @@ class Notification extends Model
     public function scopeType($query, string $type)
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * Alias for scopeType for consistency with controller
+     */
+    public function scopeOfType($query, string $type)
+    {
+        return $this->scopeType($query, $type);
     }
 }

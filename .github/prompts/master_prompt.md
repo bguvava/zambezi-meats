@@ -650,17 +650,16 @@ complete final verification checklist.
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    ZAMBEZI MEATS                            │
-│              AI Agent Quick Reference                        │
+│              AI Agent Quick Reference                       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  DATABASE: my_zambezimeats                                  │
 │  API PREFIX: /api/v1/                                       │
 │  SESSION TIMEOUT: 5 minutes                                 │
-│  MIN ORDER: $100 AUD                                        │
 │  FREE DELIVERY: $100+ in zones                              │
 │                                                             │
 │  TECH STACK:                                                │
-│  ├─ Backend: Laravel 12.x + PHP 8.2+                         │
+│  ├─ Backend: Laravel 12.x + PHP 8.2+                        │
 │  ├─ Frontend: Vue.js 3 + Vite + Tailwind                   │
 │  ├─ Database: MySQL 8.0                                     │
 │  ├─ Auth: Laravel Sanctum (cookies)                        │

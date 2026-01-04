@@ -41,22 +41,31 @@ const handlePlaceOrder = async () => {
   const paymentResult = await checkoutStore.processPayment()
 
   if (paymentResult.success) {
-    // For COD, order is immediately confirmed
+    // For COD, order is immediately confirmed with invoice
     if (checkoutStore.paymentMethod === 'cod') {
+      // COD completes immediately, move to confirmation
       checkoutStore.nextStep()
-    } else if (paymentResult.clientSecret) {
-      // For Stripe, we need to handle the client-side payment
-      // This would integrate with Stripe Elements
-      // For now, we'll simulate success
-      const confirmResult = await checkoutStore.confirmPayment({
-        payment_intent_id: paymentResult.paymentIntentId
-      })
+    } else if (checkoutStore.paymentMethod === 'stripe') {
+      // For Stripe, the client_secret is returned but actual confirmation happens client-side
+      // In a real implementation, you would:
+      // 1. Load Stripe.js
+      // 2. Use stripe.confirmCardPayment(paymentResult.clientSecret)
+      // 3. On success, call confirmPayment endpoint
+      // 
+      // For now, we'll simulate the flow for testing
+      console.log('Stripe payment initiated with client_secret:', paymentResult.clientSecret)
+      console.log('In production, this would integrate with Stripe Elements')
 
-      if (confirmResult.success) {
-        checkoutStore.nextStep()
-      }
+      // Note: Without Stripe.js integration, we cannot complete this flow
+      // The payment will remain pending until confirmed client-side
+      checkoutStore.error = 'Stripe integration requires Stripe.js library. Please contact support.'
+    } else if (checkoutStore.paymentMethod === 'paypal' || checkoutStore.paymentMethod === 'afterpay') {
+      // PayPal and Afterpay redirect to their sites
+      // The redirect already happened in processPayment()
+      // User will return via /checkout/confirm route
+      console.log(`Redirecting to ${checkoutStore.paymentMethod} for payment...`)
+      // No action needed - redirect already occurred
     }
-    // PayPal and Afterpay redirect to their sites
   }
 }
 
@@ -86,10 +95,7 @@ const paymentMethodName = computed(() => {
     </div>
 
     <!-- Error message -->
-    <div
-      v-if="error"
-      class="mb-6 rounded-lg bg-red-50 p-4 text-red-700"
-    >
+    <div v-if="error" class="mb-6 rounded-lg bg-red-50 p-4 text-red-700">
       <p class="font-medium">{{ error }}</p>
       <p class="mt-1 text-sm">Please try again or contact support.</p>
     </div>
@@ -102,11 +108,8 @@ const paymentMethodName = computed(() => {
             <MapPinIcon class="mr-2 h-5 w-5 text-gray-400" />
             <h3 class="font-medium text-gray-900">Delivery Address</h3>
           </div>
-          <button
-            type="button"
-            class="text-sm font-medium text-emerald-600 hover:text-emerald-700"
-            @click="checkoutStore.goToStep(1)"
-          >
+          <button type="button" class="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            @click="checkoutStore.goToStep(1)">
             Edit
           </button>
         </div>
@@ -131,7 +134,8 @@ const paymentMethodName = computed(() => {
           </span>
         </div>
         <p v-if="checkoutStore.estimatedDays" class="mt-1 text-sm text-gray-500">
-          Estimated delivery: {{ checkoutStore.estimatedDays === 1 ? 'Next business day' : `${checkoutStore.estimatedDays} business days` }}
+          Estimated delivery: {{ checkoutStore.estimatedDays === 1 ? 'Next business day' :
+            `${checkoutStore.estimatedDays} business days` }}
         </p>
       </div>
 
@@ -142,11 +146,8 @@ const paymentMethodName = computed(() => {
             <CreditCardIcon class="mr-2 h-5 w-5 text-gray-400" />
             <h3 class="font-medium text-gray-900">Payment Method</h3>
           </div>
-          <button
-            type="button"
-            class="text-sm font-medium text-emerald-600 hover:text-emerald-700"
-            @click="checkoutStore.goToStep(2)"
-          >
+          <button type="button" class="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            @click="checkoutStore.goToStep(2)">
             Edit
           </button>
         </div>
@@ -157,24 +158,17 @@ const paymentMethodName = computed(() => {
       <div class="rounded-lg border border-gray-200 p-4">
         <h3 class="mb-4 font-medium text-gray-900">Order Items</h3>
         <div class="space-y-3">
-          <div
-            v-for="item in cartStore.items"
-            :key="item.id"
-            class="flex items-center justify-between"
-          >
+          <div v-for="item in cartStore.items" :key="item.id" class="flex items-center justify-between">
             <div class="flex items-center">
-              <img
-                :src="item.thumbnail || '/images/placeholder.jpg'"
-                :alt="item.name"
-                class="h-12 w-12 rounded-lg object-cover"
-              />
+              <img :src="item.image || '/images/placeholder.jpg'" :alt="item.product_name"
+                class="h-12 w-12 rounded-lg object-cover" />
               <div class="ml-3">
-                <p class="font-medium text-gray-900">{{ item.name }}</p>
+                <p class="font-medium text-gray-900">{{ item.product_name }}</p>
                 <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
               </div>
             </div>
             <p class="font-medium text-gray-900">
-              ${{ (item.price * item.quantity).toFixed(2) }}
+              ${{ (item.unit_price * item.quantity).toFixed(2) }}
             </p>
           </div>
         </div>
@@ -213,24 +207,19 @@ const paymentMethodName = computed(() => {
 
     <!-- Navigation Buttons -->
     <div class="mt-8 flex justify-between">
-      <button
-        type="button"
-        :disabled="isProcessing"
+      <button type="button" :disabled="isProcessing"
         class="flex items-center rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-        @click="handleBack"
-      >
+        @click="handleBack">
         <ArrowLeftIcon class="mr-2 h-5 w-5" />
         Back
       </button>
 
-      <button
-        type="button"
-        :disabled="isProcessing"
+      <button type="button" :disabled="isProcessing"
         class="rounded-lg bg-emerald-500 px-8 py-3 font-semibold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-400"
-        @click="handlePlaceOrder"
-      >
+        @click="handlePlaceOrder">
         <span v-if="isProcessing" class="flex items-center">
-          <span class="mr-2 inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+          <span
+            class="mr-2 inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
           Processing...
         </span>
         <span v-else>

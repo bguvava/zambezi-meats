@@ -9,6 +9,8 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import api, { initializeCsrf } from "@/services/api";
+import router from "@/router";
+import { useCartStore } from "./cart";
 
 export const useAuthStore = defineStore("auth", () => {
   // State
@@ -17,13 +19,15 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = ref(false);
   const lastActivityTime = ref(Date.now());
   const sessionWarningShown = ref(false);
+  const sessionLocked = ref(false);
   const sessionTimeoutId = ref(null);
   const sessionWarningTimeoutId = ref(null);
+  const initialized = ref(false); // Track if auth has been initialized
 
-  // Session timeout in milliseconds (5 minutes)
-  const SESSION_TIMEOUT = 5 * 60 * 1000;
-  // Warning shown at 4:30 (30 seconds before timeout)
-  const SESSION_WARNING_TIME = 4.5 * 60 * 1000;
+  // Session timeout in milliseconds (30 minutes of inactivity)
+  const SESSION_TIMEOUT = 30 * 60 * 1000;
+  // Warning shown at 29 minutes (1 minute before timeout)
+  const SESSION_WARNING_TIME = 29 * 60 * 1000;
 
   // Getters
   const isAdmin = computed(() => user.value?.role === "admin");
@@ -39,23 +43,45 @@ export const useAuthStore = defineStore("auth", () => {
 
   /**
    * Initialize authentication state
+   * Only fetches user if we have a valid session cookie
    */
   async function initialize() {
+    // Prevent double initialization
+    if (initialized.value && user.value) {
+      return;
+    }
+
     isLoading.value = true;
     try {
       await initializeCsrf();
-      // Only try to fetch user if we might have a session
-      // This prevents 401 errors on login/register pages
-      try {
-        await fetchUser();
-        startSessionTimer();
-      } catch {
-        // Silently fail - user is just not authenticated
-        // This is normal for guests browsing the shop
+
+      // Check if user was previously authenticated (from localStorage)
+      const wasAuthenticated = localStorage.getItem("zambezi_auth") === "true";
+
+      // Only try to fetch user if they were previously authenticated
+      if (wasAuthenticated) {
+        try {
+          await fetchUser();
+          if (isAuthenticated.value) {
+            startSessionTimer();
+            initialized.value = true;
+          } else {
+            // Clear stale auth data if fetch failed
+            clearAuth();
+          }
+        } catch (error) {
+          // Clear auth on any non-401 error
+          if (error.response?.status !== 401) {
+            console.error("Auth initialization error:", error);
+          }
+          clearAuth();
+        }
+      } else {
+        // No previous authentication - user is a guest
         clearAuth();
       }
-    } catch {
-      // CSRF initialization failed - user can still browse as guest
+    } catch (error) {
+      console.error("CSRF initialization failed:", error);
       clearAuth();
     } finally {
       isLoading.value = false;
@@ -72,14 +98,27 @@ export const useAuthStore = defineStore("auth", () => {
         user.value = response.data.data.user;
         isAuthenticated.value = true;
         updateLastActivity();
+
+        // Persist auth state to localStorage for page refresh
+        localStorage.setItem("zambezi_auth", "true");
+        localStorage.setItem("zambezi_user_role", user.value.role);
       }
     } catch (error) {
-      // Only throw for non-401 errors (401 is expected for unauthenticated users)
-      if (error.response?.status !== 401) {
+      // Silently handle 401 for unauthenticated users (expected behavior)
+      if (error.response?.status === 401 || error.handled) {
+        // This is normal for guest users - no need to log
+        clearAuth();
+        return;
+      }
+      // Log other errors only in development
+      if (import.meta.env.DEV && error.response?.status !== 401) {
         console.error("Failed to fetch user:", error);
       }
       clearAuth();
-      throw error;
+      // Don't throw for 401 errors
+      if (error.response?.status !== 401) {
+        throw error;
+      }
     }
   }
 
@@ -95,6 +134,13 @@ export const useAuthStore = defineStore("auth", () => {
       if (response.data?.success) {
         user.value = response.data.data.user;
         isAuthenticated.value = true;
+        initialized.value = true;
+        updateLastActivity();
+
+        // Persist auth state to localStorage for page refresh
+        localStorage.setItem("zambezi_auth", "true");
+        localStorage.setItem("zambezi_user_role", user.value.role);
+
         startSessionTimer();
         return { success: true, message: response.data.message };
       }
@@ -122,6 +168,13 @@ export const useAuthStore = defineStore("auth", () => {
       if (response.data?.success) {
         user.value = response.data.data.user;
         isAuthenticated.value = true;
+        initialized.value = true;
+        updateLastActivity();
+
+        // Persist auth state to localStorage for page refresh
+        localStorage.setItem("zambezi_auth", "true");
+        localStorage.setItem("zambezi_user_role", user.value.role);
+
         startSessionTimer();
         return { success: true, message: response.data.message };
       }
@@ -152,30 +205,15 @@ export const useAuthStore = defineStore("auth", () => {
       isLoading.value = false;
 
       // Clear cart on logout (Issue 5)
-      if (typeof window !== "undefined") {
-        try {
-          const { useCartStore } = await import("./cart");
-          const cartStore = useCartStore();
-          cartStore.clearOnLogout();
-        } catch (err) {
-          console.error("Failed to clear cart on logout:", err);
-        }
-      }
+      const cartStore = useCartStore();
+      cartStore.clearOnLogout();
 
       // Redirect to homepage if specified
-      if (redirectToHome && typeof window !== "undefined") {
-        try {
-          const router = (await import("../router")).default;
-          router.push({
-            path: "/",
-            query: reason ? { message: reason } : undefined,
-          });
-        } catch (err) {
-          // Fallback to window location if router import fails
-          window.location.href = reason
-            ? `/?message=${encodeURIComponent(reason)}`
-            : "/";
-        }
+      if (redirectToHome) {
+        router.push({
+          path: "/",
+          query: reason ? { message: reason } : undefined,
+        });
       }
     }
   }
@@ -267,6 +305,11 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
     isAuthenticated.value = false;
     sessionWarningShown.value = false;
+    initialized.value = false;
+
+    // Clear localStorage
+    localStorage.removeItem("zambezi_auth");
+    localStorage.removeItem("zambezi_user_role");
   }
 
   /**
@@ -286,13 +329,19 @@ export const useAuthStore = defineStore("auth", () => {
 
     // Set warning timer (4:30)
     sessionWarningTimeoutId.value = setTimeout(() => {
-      sessionWarningShown.value = true;
+      // Only show warning if user is still authenticated and not already locked
+      if (isAuthenticated.value && !sessionLocked.value) {
+        sessionWarningShown.value = true;
+      }
     }, SESSION_WARNING_TIME);
 
-    // Set timeout timer (5:00)
-    sessionTimeoutId.value = setTimeout(async () => {
-      sessionWarningShown.value = false;
-      await logout(true, "Session expired due to inactivity");
+    // Set lock screen timer (5:00)
+    sessionTimeoutId.value = setTimeout(() => {
+      // Only lock if user is still authenticated and hasn't been active
+      if (isAuthenticated.value && !sessionWarningShown.value === false) {
+        sessionWarningShown.value = false;
+        sessionLocked.value = true;
+      }
     }, SESSION_TIMEOUT);
   }
 
@@ -314,6 +363,9 @@ export const useAuthStore = defineStore("auth", () => {
    * Reset session timer on user activity
    */
   function resetSessionTimer() {
+    // Only reset if authenticated and not locked
+    if (!isAuthenticated.value || sessionLocked.value) return;
+
     updateLastActivity();
     sessionWarningShown.value = false;
     startSessionTimer();
@@ -344,6 +396,42 @@ export const useAuthStore = defineStore("auth", () => {
     sessionWarningShown.value = false;
   }
 
+  /**
+   * Unlock session with password
+   * @param {string} password - User's password
+   */
+  async function unlockSession(password) {
+    try {
+      // Use login endpoint instead of unlock since it's the same validation
+      const response = await api.post("/auth/login", {
+        email: user.value.email,
+        password: password,
+      });
+
+      if (response.data?.success) {
+        sessionLocked.value = false;
+        updateLastActivity();
+        startSessionTimer();
+        return { success: true };
+      }
+
+      return { success: false, message: "Invalid password" };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Incorrect password",
+      };
+    }
+  }
+
+  /**
+   * Lock session manually
+   */
+  function lockSession() {
+    sessionLocked.value = true;
+    stopSessionTimer();
+  }
+
   return {
     // State
     user,
@@ -351,6 +439,8 @@ export const useAuthStore = defineStore("auth", () => {
     isAuthenticated,
     lastActivityTime,
     sessionWarningShown,
+    sessionLocked,
+    initialized,
 
     // Getters
     isAdmin,
@@ -378,5 +468,7 @@ export const useAuthStore = defineStore("auth", () => {
     isSessionExpired,
     checkSession,
     dismissSessionWarning,
+    unlockSession,
+    lockSession,
   };
 });

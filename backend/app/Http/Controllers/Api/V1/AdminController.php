@@ -11,6 +11,7 @@ use App\Http\Requests\Api\UpdateCategoryRequest;
 use App\Http\Requests\Api\UpdateProductRequest;
 use App\Models\ActivityLog;
 use App\Models\Category;
+use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -18,14 +19,15 @@ use App\Models\ProductImage;
 use App\Models\Promotion;
 use App\Models\User;
 use App\Services\ImageUploadService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -150,6 +152,28 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
 
+        // Profit vs Expenses chart (last 12 months)
+        $profitExpensesChart = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
+            $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
+
+            $monthRevenue = Order::whereBetween('created_at', [$monthStart, $monthEnd])
+                ->whereIn('status', [Order::STATUS_DELIVERED, Order::STATUS_CONFIRMED, Order::STATUS_PROCESSING, Order::STATUS_READY, Order::STATUS_OUT_FOR_DELIVERY])
+                ->sum('total');
+
+            // Estimate expenses as 60% of revenue (COGS + operational costs)
+            $monthExpenses = $monthRevenue * 0.60;
+            $monthProfit = $monthRevenue - $monthExpenses;
+
+            $profitExpensesChart[] = [
+                'month' => $monthStart->format('M'),
+                'revenue' => (float) $monthRevenue,
+                'expenses' => (float) $monthExpenses,
+                'profit' => (float) $monthProfit,
+            ];
+        }
+
         return response()->json([
             'success' => true,
             'dashboard' => [
@@ -166,6 +190,7 @@ class AdminController extends Controller
                     'pending_orders' => $pendingOrders,
                 ],
                 'revenue_chart' => $revenueChart,
+                'profit_expenses_chart' => $profitExpensesChart,
                 'recent_orders' => $recentOrders,
                 'low_stock_products' => $lowStockProducts,
                 'top_products' => $topProducts,
@@ -858,6 +883,73 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete image: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload images to existing product.
+     *
+     * @requirement PROD-007 Implement product image upload
+     * @requirement PROD-013 Multi-image upload with drag-drop
+     */
+    public function uploadProductImages(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeAdminOrStaff($request);
+
+        $validated = $request->validate([
+            'images' => ['required', 'array', 'min:1', 'max:5'],
+            'images.*' => ['required', 'file', 'image', 'max:2048'],
+        ]);
+
+        $product = Product::findOrFail($id);
+
+        DB::beginTransaction();
+
+        try {
+            $imageService = new ImageUploadService();
+
+            // Get current highest sort order
+            $maxSortOrder = $product->images()->max('sort_order') ?? -1;
+
+            // Check if product has any images
+            $hasImages = $product->images()->count() > 0;
+
+            // Upload and save images
+            $uploadedImages = [];
+            foreach ($validated['images'] as $index => $file) {
+                $imagePaths = $imageService->uploadImage($file, 'products', true);
+
+                $productImage = ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $imagePaths['original'],
+                    'alt_text' => $product->name,
+                    'sort_order' => $maxSortOrder + $index + 1,
+                    'is_primary' => !$hasImages && $index === 0, // First image is primary if no images exist
+                ]);
+
+                $uploadedImages[] = $productImage;
+            }
+
+            // Log activity
+            ActivityLog::log('product_images_uploaded', $product, null, [
+                'count' => count($uploadedImages),
+                'image_ids' => array_map(fn($img) => $img->id, $uploadedImages),
+            ], $request->user()->id);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => count($uploadedImages) . ' image(s) uploaded successfully.',
+                'images' => $product->fresh()->images()->ordered()->get(),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload images: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -2078,6 +2170,396 @@ class AdminController extends Controller
                 'start_date' => $startDate->toDateString(),
                 'end_date' => $endDate->toDateString(),
             ],
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Invoice Management
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get all invoices with filtering and pagination.
+     */
+    public function getInvoices(Request $request): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+
+        $perPage = min((int) $request->input('per_page', 15), 100);
+        $status = $request->input('status');
+        $search = $request->input('search');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $query = \App\Models\Invoice::with(['order.user']);
+
+        // Filter by status
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Search by invoice number or customer name
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                    ->orWhereHas('order.user', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Sorting
+        $query->orderBy($sortBy, $sortOrder);
+
+        $invoices = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'invoices' => \App\Http\Resources\Api\V1\InvoiceResource::collection($invoices->items()),
+            'pagination' => [
+                'total' => $invoices->total(),
+                'per_page' => $invoices->perPage(),
+                'current_page' => $invoices->currentPage(),
+                'last_page' => $invoices->lastPage(),
+                'from' => $invoices->firstItem(),
+                'to' => $invoices->lastItem(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get single invoice.
+     */
+    public function getInvoice(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+
+        $invoice = \App\Models\Invoice::with(['order.user', 'order.items.product', 'order.address'])
+            ->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'invoice' => new \App\Http\Resources\Api\V1\InvoiceResource($invoice),
+        ]);
+    }
+
+    /**
+     * Update invoice status.
+     */
+    public function updateInvoiceStatus(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+
+        $request->validate([
+            'status' => ['required', 'string', Rule::in([
+                \App\Models\Invoice::STATUS_DRAFT,
+                \App\Models\Invoice::STATUS_PENDING,
+                \App\Models\Invoice::STATUS_PAID,
+                \App\Models\Invoice::STATUS_OVERDUE,
+                \App\Models\Invoice::STATUS_CANCELLED,
+            ])],
+        ]);
+
+        $invoice = \App\Models\Invoice::findOrFail($id);
+
+        // If marking as paid, set paid_at timestamp
+        if ($request->input('status') === \App\Models\Invoice::STATUS_PAID && !$invoice->paid_at) {
+            $invoice->update([
+                'status' => $request->input('status'),
+                'paid_at' => now(),
+            ]);
+        } else {
+            $invoice->update(['status' => $request->input('status')]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invoice status updated successfully.',
+            'invoice' => new \App\Http\Resources\Api\V1\InvoiceResource($invoice->fresh()),
+        ]);
+    }
+
+    /**
+     * Get invoice statistics.
+     */
+    public function getInvoiceStats(Request $request): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+
+        $totalInvoices = \App\Models\Invoice::count();
+        $paidInvoices = \App\Models\Invoice::where('status', \App\Models\Invoice::STATUS_PAID)->count();
+        $pendingInvoices = \App\Models\Invoice::where('status', \App\Models\Invoice::STATUS_PENDING)->count();
+        $overdueInvoices = \App\Models\Invoice::where('status', \App\Models\Invoice::STATUS_OVERDUE)->count();
+
+        $totalAmount = \App\Models\Invoice::sum('total');
+        $paidAmount = \App\Models\Invoice::where('status', \App\Models\Invoice::STATUS_PAID)->sum('total');
+        $pendingAmount = \App\Models\Invoice::whereIn('status', [
+            \App\Models\Invoice::STATUS_PENDING,
+            \App\Models\Invoice::STATUS_OVERDUE
+        ])->sum('total');
+
+        return response()->json([
+            'success' => true,
+            'stats' => [
+                'total_invoices' => $totalInvoices,
+                'paid_invoices' => $paidInvoices,
+                'pending_invoices' => $pendingInvoices,
+                'overdue_invoices' => $overdueInvoices,
+                'total_amount' => (float) $totalAmount,
+                'paid_amount' => (float) $paidAmount,
+                'pending_amount' => (float) $pendingAmount,
+            ],
+        ]);
+    }
+
+    /**
+     * Download invoice as PDF.
+     */
+    public function downloadInvoicePDF(Request $request, int $id)
+    {
+        $this->authorizeAdmin($request);
+
+        $invoice = Invoice::with([
+            'order.user',
+            'order.items',
+            'order.address',
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('invoices.pdf', ['invoice' => $invoice]);
+
+        return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Support Tickets Management (Admin & Staff)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get all support tickets with filters and pagination.
+     *
+     * @requirement MSG-001 Add Tickets/Helpdesk Tab
+     */
+    public function getTickets(Request $request): JsonResponse
+    {
+        $this->authorizeAdminOrStaff($request);
+
+        $query = \App\Models\SupportTicket::with(['user', 'order'])
+            ->orderBy($request->input('sort_by', 'created_at'), $request->input('sort_order', 'desc'));
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Filter by priority
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->input('priority'));
+        }
+
+        // Search by subject, user name, or email
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('subject', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $perPage = min($request->input('per_page', 20), 100);
+        $tickets = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $tickets->map(fn($ticket) => [
+                'id' => $ticket->id,
+                'user' => [
+                    'id' => $ticket->user->id,
+                    'name' => $ticket->user->name,
+                    'email' => $ticket->user->email,
+                ],
+                'order_id' => $ticket->order_id,
+                'subject' => $ticket->subject,
+                'message' => $ticket->message,
+                'status' => $ticket->status,
+                'priority' => $ticket->priority,
+                'created_at' => $ticket->created_at->toIso8601String(),
+                'updated_at' => $ticket->updated_at->toIso8601String(),
+            ]),
+            'pagination' => [
+                'current_page' => $tickets->currentPage(),
+                'last_page' => $tickets->lastPage(),
+                'per_page' => $tickets->perPage(),
+                'total' => $tickets->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get single ticket details.
+     *
+     * @requirement MSG-001 Add Tickets/Helpdesk Tab
+     */
+    public function getTicket(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeAdminOrStaff($request);
+
+        $ticket = \App\Models\SupportTicket::with(['user', 'order', 'replies.user'])
+            ->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $ticket->id,
+                'user' => [
+                    'id' => $ticket->user->id,
+                    'name' => $ticket->user->name,
+                    'email' => $ticket->user->email,
+                ],
+                'order_id' => $ticket->order_id,
+                'order_number' => $ticket->order?->order_number,
+                'subject' => $ticket->subject,
+                'message' => $ticket->message,
+                'status' => $ticket->status,
+                'priority' => $ticket->priority,
+                'created_at' => $ticket->created_at->toIso8601String(),
+                'updated_at' => $ticket->updated_at->toIso8601String(),
+                'replies' => $ticket->replies->map(fn($reply) => [
+                    'id' => $reply->id,
+                    'user' => [
+                        'id' => $reply->user->id,
+                        'name' => $reply->user->name,
+                    ],
+                    'message' => $reply->message,
+                    'is_staff' => in_array($reply->user->role, ['staff', 'admin']),
+                    'created_at' => $reply->created_at->toIso8601String(),
+                ]),
+            ],
+        ]);
+    }
+
+    /**
+     * Update ticket status.
+     *
+     * @requirement MSG-001 Add Tickets/Helpdesk Tab
+     */
+    public function updateTicketStatus(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeAdminOrStaff($request);
+
+        $ticket = \App\Models\SupportTicket::findOrFail($id);
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', Rule::in([
+                \App\Models\SupportTicket::STATUS_OPEN,
+                \App\Models\SupportTicket::STATUS_IN_PROGRESS,
+                \App\Models\SupportTicket::STATUS_RESOLVED,
+                \App\Models\SupportTicket::STATUS_CLOSED,
+            ])],
+        ]);
+
+        $ticket->update(['status' => $validated['status']]);
+
+        ActivityLog::log('ticket_status_updated', $ticket, ['status' => $validated['status']], null, $request->user()->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket status updated successfully.',
+            'data' => [
+                'id' => $ticket->id,
+                'status' => $ticket->status,
+            ],
+        ]);
+    }
+
+    /**
+     * Reply to a ticket.
+     *
+     * @requirement MSG-001 Add Tickets/Helpdesk Tab
+     */
+    public function replyToTicket(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeAdminOrStaff($request);
+
+        $ticket = \App\Models\SupportTicket::findOrFail($id);
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $reply = $ticket->replies()->create([
+            'user_id' => $request->user()->id,
+            'message' => $validated['message'],
+        ]);
+
+        // Auto-update ticket status to in_progress if it's open
+        if ($ticket->status === \App\Models\SupportTicket::STATUS_OPEN) {
+            $ticket->update(['status' => \App\Models\SupportTicket::STATUS_IN_PROGRESS]);
+        }
+
+        ActivityLog::log('ticket_reply_added', $ticket, ['reply_id' => $reply->id], null, $request->user()->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reply added successfully.',
+            'data' => [
+                'id' => $reply->id,
+                'user' => [
+                    'id' => $reply->user->id,
+                    'name' => $reply->user->name,
+                ],
+                'message' => $reply->message,
+                'created_at' => $reply->created_at->toIso8601String(),
+            ],
+        ]);
+    }
+
+    /**
+     * Delete a ticket.
+     *
+     * @requirement MSG-001 Add Tickets/Helpdesk Tab
+     */
+    public function deleteTicket(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+
+        $ticket = \App\Models\SupportTicket::findOrFail($id);
+        $ticket->delete();
+
+        ActivityLog::log('ticket_deleted', $ticket, null, null, $request->user()->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Get ticket statistics.
+     *
+     * @requirement MSG-001 Add Tickets/Helpdesk Tab
+     */
+    public function getTicketStats(Request $request): JsonResponse
+    {
+        $this->authorizeAdminOrStaff($request);
+
+        $stats = [
+            'total' => \App\Models\SupportTicket::count(),
+            'open' => \App\Models\SupportTicket::where('status', \App\Models\SupportTicket::STATUS_OPEN)->count(),
+            'in_progress' => \App\Models\SupportTicket::where('status', \App\Models\SupportTicket::STATUS_IN_PROGRESS)->count(),
+            'resolved' => \App\Models\SupportTicket::where('status', \App\Models\SupportTicket::STATUS_RESOLVED)->count(),
+            'closed' => \App\Models\SupportTicket::where('status', \App\Models\SupportTicket::STATUS_CLOSED)->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats,
         ]);
     }
 }

@@ -45,10 +45,19 @@ const handleSelect = (methodId) => {
 </script>
 
 <template>
-  <div class="space-y-3">
-    <label
-      v-for="method in methods"
-      :key="method.id"
+  <div>
+    <!-- Loading state -->
+    <div v-if="!methods || methods.length === 0" class="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+      <CreditCardIcon class="mx-auto h-12 w-12 text-gray-400" />
+      <p class="mt-3 text-sm font-medium text-gray-900">Loading payment methods...</p>
+      <p class="mt-1 text-xs text-gray-500">Please wait while we fetch available payment options</p>
+    </div>
+
+    <!-- Payment methods list -->
+    <div v-else class="space-y-3">
+      <label
+        v-for="method in methods"
+        :key="method.id"
       class="relative flex cursor-pointer rounded-lg border p-4 transition-colors"
       :class="{
         'border-emerald-500 bg-emerald-50': selected === method.id,
@@ -116,5 +125,6 @@ const handleSelect = (methodId) => {
         </div>
       </div>
     </label>
+    </div>
   </div>
 </template>

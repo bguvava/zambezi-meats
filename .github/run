@@ -8,31 +8,20 @@ cd backend; php artisan db:seed --class=ProductSeeder
 ---
 cd ..; (Get-Content database/seeders/data/products_sausages.json) -replace '"category_slug": "beef-sausages"', '"category_slug": "sausages-beef-sausages"' -replace '"category_slug": "pork-sausages"', '"category_slug": "sausages-pork-sausages"' -replace '"category_slug": "gourmet-sausages"', '"category_slug": "sausages-gourmet-sausages"' | Set-Content database/seeders/data/products_sausages.json; php artisan db:seed --class=ProductSeeder
 ---
-cd backend; php artisan serve --host=127.0.0.1 --port=8000
-cd frontend; npm run dev
+Set-Location c:\xampp\htdocs\Zambezi-Meats\backend; php artisan cache:clear; php artisan config:clear; php artisan route:clear; php artisan view:clear; php artisan optimize:clear
 
-cd C:\xampp\htdocs\Zambezi-Meats\backend; php artisan serve --port=8000
+Set-Location c:\xampp\htdocs\Zambezi-Meats\backend; php artisan serve --port=8000
 
-cd C:\xampp\htdocs\Zambezi-Meats\frontend; npm run dev
+Set-Location c:\xampp\htdocs\Zambezi-Meats\frontend; npm run dev
 
 Backend (Laravel): http://127.0.0.1:8000
 Frontend (Vue.js): http://localhost:5173
 
 Default Test Accounts
-Email:    admin@zambezimeats.com.au
-Password: password
-Role:     Administrator
-Access:   All dashboards, settings, user management, reports
----
-Email:    staff@zambezimeats.com.au
-Password: password
-Role:     Staff
-Access:   Order management, inventory, deliveries
----
-Email:    customer@example.com
-Password: password
-Role:     Customer
-Access:   Shop, cart, orders, profile
+admin@zambezimeats.com.au : password
+staff@zambezimeats.com.au : password
+customer@example.com : password
+
 ---
 cd c:\xampp\htdocs\Zambezi-Meats\backend
 php artisan migrate:fresh --seed

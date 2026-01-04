@@ -90,6 +90,18 @@ const routes = [
         component: () => import("@/pages/PrivacyPage.vue"),
         meta: { title: "Privacy Policy" },
       },
+      {
+        path: "blog",
+        name: "blog",
+        component: () => import("@/pages/BlogListPage.vue"),
+        meta: { title: "Blog" },
+      },
+      {
+        path: "blog/:slug",
+        name: "blog-post",
+        component: () => import("@/pages/BlogPostPage.vue"),
+        meta: { title: "Blog Post" },
+      },
     ],
   },
 
@@ -133,8 +145,8 @@ const routes = [
   {
     path: "/checkout/confirm",
     name: "checkout-confirm",
-    component: () => import("@/pages/CheckoutPage.vue"),
-    meta: { title: "Confirm Payment", requiresAuth: true },
+    component: () => import("@/components/checkout/PaymentReturnHandler.vue"),
+    meta: { title: "Confirming Payment", requiresAuth: true },
   },
   {
     path: "/checkout/success/:orderNumber",
@@ -172,7 +184,7 @@ const routes = [
       {
         path: "profile",
         name: "customer-profile",
-        component: () => import("@/pages/customer/ProfilePage.vue"),
+        component: () => import("@/pages/customer/Profile.vue"),
         meta: { title: "My Profile" },
       },
       {
@@ -241,10 +253,22 @@ const routes = [
         meta: { title: "Waste Log" },
       },
       {
-        path: "activity",
-        name: "staff-activity",
-        component: () => import("@/pages/staff/ActivityPage.vue"),
-        meta: { title: "My Activity" },
+        path: "messages",
+        name: "staff-messages",
+        component: () => import("@/pages/staff/MessagesPage.vue"),
+        meta: { title: "Messages" },
+      },
+      {
+        path: "invoices",
+        name: "staff-invoices",
+        component: () => import("@/pages/staff/InvoicesPage.vue"),
+        meta: { title: "Invoices" },
+      },
+      {
+        path: "invoices/:id",
+        name: "staff-invoice-detail",
+        component: () => import("@/pages/staff/InvoiceDetailPage.vue"),
+        meta: { title: "Invoice Details" },
       },
     ],
   },
@@ -294,6 +318,12 @@ const routes = [
         meta: { title: "Inventory Management" },
       },
       {
+        path: "deliveries",
+        name: "admin-deliveries",
+        component: () => import("@/pages/admin/DeliveryPage.vue"),
+        meta: { title: "Delivery Management" },
+      },
+      {
         path: "promotions",
         name: "admin-promotions",
         component: () => import("@/pages/admin/PromotionsPage.vue"),
@@ -318,10 +348,28 @@ const routes = [
         meta: { title: "Reports & Analytics" },
       },
       {
+        path: "messages",
+        name: "admin-messages",
+        component: () => import("@/pages/admin/MessagesPage.vue"),
+        meta: { title: "Messages" },
+      },
+      {
         path: "settings",
         name: "admin-settings",
         component: () => import("@/pages/admin/SettingsPage.vue"),
         meta: { title: "System Settings" },
+      },
+      {
+        path: "invoices",
+        name: "admin-invoices",
+        component: () => import("@/pages/admin/InvoicesPage.vue"),
+        meta: { title: "Invoices" },
+      },
+      {
+        path: "invoices/:id",
+        name: "admin-invoice-detail",
+        component: () => import("@/pages/admin/InvoiceDetailPage.vue"),
+        meta: { title: "Invoice Details" },
       },
     ],
   },
@@ -359,17 +407,24 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
+  // Wait for auth initialization to complete before checking routes
+  // This prevents false negatives on page refresh
+  if (!authStore.initialized) {
+    try {
+      await authStore.initialize();
+    } catch (error) {
+      // Initialization failed - user will be treated as guest
+      console.log("Auth initialization during navigation:", error.message);
+    }
+  }
+
   // Update page title
   document.title = to.meta.title
     ? `${to.meta.title} | Zambezi Meats`
     : "Zambezi Meats";
 
-  // Check session timeout ONLY for protected routes
-  if (authStore.isAuthenticated && to.meta.requiresAuth) {
-    const sessionValid = await authStore.checkSession();
-    if (!sessionValid) {
-      return next({ name: "login", query: { session_expired: "true" } });
-    }
+  // Update last activity time for authenticated users (keep session alive)
+  if (authStore.isAuthenticated) {
     authStore.updateLastActivity();
   }
 

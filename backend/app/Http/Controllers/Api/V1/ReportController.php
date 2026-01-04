@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 /**
  * ReportController handles all reports and analytics endpoints.
@@ -1000,20 +1001,22 @@ class ReportController extends Controller
      * @requirement RPT-018 Export report to PDF (View)
      * @requirement RPT-019 Export report to PDF (Download)
      */
-    public function export(Request $request, string $type): JsonResponse
+    public function export(Request $request, string $type)
     {
         $validTypes = [
-            'sales-summary',
+            'sales_summary',
             'revenue',
             'orders',
             'products',
             'categories',
+            'top_products',
+            'low_performing',
             'customers',
             'staff',
             'deliveries',
             'inventory',
-            'financial',
-            'payment-methods',
+            'financial_summary',
+            'payment_methods',
         ];
 
         if (!in_array($type, $validTypes)) {
@@ -1024,43 +1027,69 @@ class ReportController extends Controller
         }
 
         $dateRange = $this->getDateRange($request);
-        $action = $request->input('action', 'view'); // view or download
+        $action = $request->input('action', 'download'); // view or download
 
-        // For MVP, we return the data that would be used to generate the PDF
-        // In production, this would use a PDF library like DomPDF or Snappy
+        // Get report data based on type
         $reportData = match ($type) {
-            'sales-summary' => $this->getSalesSummaryData($dateRange),
-            'revenue' => $this->getRevenueData($dateRange),
-            'orders' => $this->getOrdersData($dateRange),
-            'products' => $this->getProductsData($dateRange),
-            'categories' => $this->getCategoriesData($dateRange),
-            'customers' => $this->getCustomersData($dateRange),
-            'staff' => $this->getStaffData($dateRange),
-            'deliveries' => $this->getDeliveriesData($dateRange),
-            'inventory' => $this->getInventoryData($dateRange),
-            'financial' => $this->getFinancialData($dateRange),
-            'payment-methods' => $this->getPaymentMethodsData($dateRange),
+            'sales_summary' => $this->getSalesSummaryDataForPdf($dateRange),
+            'revenue' => $this->getRevenueDataForPdf($dateRange),
+            'orders' => $this->getOrdersDataForPdf($dateRange),
+            'products' => $this->getProductsDataForPdf($dateRange),
+            'categories' => $this->getCategoriesDataForPdf($dateRange),
+            'top_products' => $this->getTopProductsDataForPdf($dateRange),
+            'low_performing' => $this->getLowPerformingDataForPdf($dateRange),
+            'customers' => $this->getCustomersDataForPdf($dateRange),
+            'staff' => $this->getStaffDataForPdf($dateRange),
+            'deliveries' => $this->getDeliveriesDataForPdf($dateRange),
+            'inventory' => $this->getInventoryDataForPdf($dateRange),
+            'financial_summary' => $this->getFinancialDataForPdf($dateRange),
+            'payment_methods' => $this->getPaymentMethodsDataForPdf($dateRange),
         };
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'report_type' => $type,
-                'action' => $action,
-                'date_range' => [
-                    'start' => $dateRange['start']->toDateString(),
-                    'end' => $dateRange['end']->toDateString(),
-                ],
-                'generated_at' => now()->toIso8601String(),
-                'report_data' => $reportData,
-                // In production, this would be a URL to the generated PDF
-                'pdf_url' => "/api/v1/admin/reports/{$type}/pdf?" . http_build_query([
-                    'start_date' => $dateRange['start']->toDateString(),
-                    'end_date' => $dateRange['end']->toDateString(),
-                    'action' => $action,
-                ]),
-            ],
-        ]);
+        // Add common data
+        $reportData['report_title'] = $this->getReportTitle($type);
+        $reportData['date_range'] = [
+            'start' => $dateRange['start']->format('d/m/Y'),
+            'end' => $dateRange['end']->format('d/m/Y'),
+        ];
+        $reportData['generated_at'] = now()->format('d/m/Y H:i:s');
+        $reportData['generated_by'] = $request->user()->name;
+
+        // Generate PDF using universal template
+        $pdf = Pdf::loadView('reports.universal', $reportData);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = str_replace('_', '-', $type) . '-' . now()->format('Y-m-d') . '.pdf';
+
+        // Return PDF based on action
+        if ($action === 'view') {
+            return $pdf->stream($filename);
+        }
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Get human-readable report title.
+     */
+    private function getReportTitle(string $type): string
+    {
+        return match ($type) {
+            'sales_summary' => 'Sales Summary Report',
+            'revenue' => 'Revenue Report',
+            'orders' => 'Orders Report',
+            'products' => 'Products Performance Report',
+            'categories' => 'Categories Report',
+            'top_products' => 'Top Products Report',
+            'low_performing' => 'Low Performing Products Report',
+            'customers' => 'Customers Report',
+            'staff' => 'Staff Performance Report',
+            'deliveries' => 'Delivery Performance Report',
+            'inventory' => 'Inventory Report',
+            'financial_summary' => 'Financial Summary Report',
+            'payment_methods' => 'Payment Methods Report',
+            default => 'Report',
+        };
     }
 
     /**
@@ -1116,6 +1145,419 @@ class ReportController extends Controller
         return [
             'start' => $startDate ? Carbon::parse($startDate)->startOfDay() : Carbon::now()->subDays(30)->startOfDay(),
             'end' => $endDate ? Carbon::parse($endDate)->endOfDay() : Carbon::now()->endOfDay(),
+        ];
+    }
+
+    /**
+     * Get sales summary data for PDF export.
+     */
+    private function getSalesSummaryDataForPdf(array $dateRange): array
+    {
+        $orders = Order::whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('status', ['cancelled', 'refunded'])
+            ->with(['user', 'items.product'])
+            ->get();
+
+        $totalRevenue = $orders->sum('total');
+        $totalOrders = $orders->count();
+        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+
+        // Daily breakdown
+        $dailyBreakdown = $orders->groupBy(function ($order) {
+            return $order->created_at->format('Y-m-d');
+        })->map(function ($dayOrders) {
+            return [
+                'date' => $dayOrders->first()->created_at->format('d/m/Y'),
+                'orders' => $dayOrders->count(),
+                'revenue' => $dayOrders->sum('total'),
+            ];
+        })->values();
+
+        // Status breakdown
+        $statusBreakdown = $orders->groupBy('status')->map(function ($statusOrders, $status) {
+            return [
+                'status' => ucfirst($status),
+                'count' => $statusOrders->count(),
+                'revenue' => $statusOrders->sum('total'),
+            ];
+        })->values();
+
+        return [
+            'summary' => [
+                'total_revenue' => number_format($totalRevenue, 2),
+                'total_orders' => $totalOrders,
+                'avg_order_value' => number_format($avgOrderValue, 2),
+                'total_items_sold' => $orders->sum(fn($order) => $order->items->sum('quantity')),
+            ],
+            'daily_breakdown' => $dailyBreakdown,
+            'status_breakdown' => $statusBreakdown,
+        ];
+    }
+
+    /**
+     * Get revenue data for PDF export.
+     */
+    private function getRevenueDataForPdf(array $dateRange): array
+    {
+        $orders = Order::whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('status', ['cancelled', 'refunded'])
+            ->get();
+
+        return [
+            'total_revenue' => number_format($orders->sum('total'), 2),
+            'subtotal' => number_format($orders->sum('subtotal'), 2),
+            'delivery_fees' => number_format($orders->sum('delivery_fee'), 2),
+            'discounts' => number_format($orders->sum('discount'), 2),
+            'order_count' => $orders->count(),
+        ];
+    }
+
+    /**
+     * Get orders data for PDF export.
+     */
+    private function getOrdersDataForPdf(array $dateRange): array
+    {
+        $orders = Order::whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+            ->with(['user'])
+            ->get();
+
+        $statusBreakdown = $orders->groupBy('status')->map(function ($statusOrders, $status) {
+            return [
+                'status' => ucfirst($status),
+                'count' => $statusOrders->count(),
+                'percentage' => $orders->count() > 0 ? round(($statusOrders->count() / $orders->count()) * 100, 1) : 0,
+            ];
+        })->values();
+
+        return [
+            'total_orders' => $orders->count(),
+            'status_breakdown' => $statusBreakdown,
+            'recent_orders' => $orders->take(20)->map(function ($order) {
+                return [
+                    'order_number' => $order->order_number,
+                    'customer' => $order->user->name ?? 'Guest',
+                    'total' => number_format($order->total, 2),
+                    'status' => ucfirst($order->status),
+                    'date' => $order->created_at->format('d/m/Y H:i'),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get products data for PDF export.
+     */
+    private function getProductsDataForPdf(array $dateRange): array
+    {
+        $productStats = OrderItem::select(
+            'products.id',
+            'products.name',
+            'categories.name as category_name',
+            DB::raw('SUM(order_items.quantity) as total_quantity'),
+            DB::raw('SUM(order_items.total_price) as total_revenue'),
+            DB::raw('COUNT(DISTINCT order_items.order_id) as order_count')
+        )
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->whereBetween('orders.created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('orders.status', ['cancelled', 'refunded'])
+            ->groupBy('products.id', 'products.name', 'categories.name')
+            ->orderByDesc('total_revenue')
+            ->get();
+
+        return [
+            'total_revenue' => number_format($productStats->sum('total_revenue'), 2),
+            'total_products_sold' => $productStats->count(),
+            'total_quantity_sold' => $productStats->sum('total_quantity'),
+            'products' => $productStats->map(function ($product) {
+                return [
+                    'name' => $product->name,
+                    'category' => $product->category_name ?? 'Uncategorized',
+                    'quantity' => $product->total_quantity,
+                    'revenue' => number_format($product->total_revenue, 2),
+                    'orders' => $product->order_count,
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get categories data for PDF export.
+     */
+    private function getCategoriesDataForPdf(array $dateRange): array
+    {
+        $categoryStats = OrderItem::select(
+            'categories.id',
+            'categories.name',
+            DB::raw('SUM(order_items.quantity) as total_quantity'),
+            DB::raw('SUM(order_items.total_price) as total_revenue')
+        )
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->whereBetween('orders.created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('orders.status', ['cancelled', 'refunded'])
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total_revenue')
+            ->get();
+
+        return [
+            'total_revenue' => number_format($categoryStats->sum('total_revenue'), 2),
+            'categories' => $categoryStats->map(function ($category) {
+                return [
+                    'name' => $category->name,
+                    'quantity' => $category->total_quantity,
+                    'revenue' => number_format($category->total_revenue, 2),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get top products data for PDF export.
+     */
+    private function getTopProductsDataForPdf(array $dateRange): array
+    {
+        $topProducts = OrderItem::select(
+            'products.id',
+            'products.name',
+            'categories.name as category_name',
+            DB::raw('SUM(order_items.quantity) as total_quantity'),
+            DB::raw('SUM(order_items.total_price) as total_revenue')
+        )
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->whereBetween('orders.created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('orders.status', ['cancelled', 'refunded'])
+            ->groupBy('products.id', 'products.name', 'categories.name')
+            ->orderByDesc('total_revenue')
+            ->limit(20)
+            ->get();
+
+        return [
+            'products' => $topProducts->map(function ($product, $index) {
+                return [
+                    'rank' => $index + 1,
+                    'name' => $product->name,
+                    'category' => $product->category_name ?? 'Uncategorized',
+                    'quantity' => $product->total_quantity,
+                    'revenue' => number_format($product->total_revenue, 2),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get low performing products data for PDF export.
+     */
+    private function getLowPerformingDataForPdf(array $dateRange): array
+    {
+        // Products with sales but low performance
+        $lowSelling = OrderItem::select(
+            'products.id',
+            'products.name',
+            DB::raw('SUM(order_items.quantity) as total_quantity'),
+            DB::raw('SUM(order_items.total_price) as total_revenue')
+        )
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereBetween('orders.created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('orders.status', ['cancelled', 'refunded'])
+            ->groupBy('products.id', 'products.name')
+            ->orderBy('total_revenue')
+            ->limit(20)
+            ->get();
+
+        // Products with no sales in period
+        $noSales = Product::where('is_active', true)
+            ->whereDoesntHave('orderItems', function ($query) use ($dateRange) {
+                $query->whereHas('order', function ($orderQuery) use ($dateRange) {
+                    $orderQuery->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+                        ->whereNotIn('status', ['cancelled', 'refunded']);
+                });
+            })
+            ->limit(20)
+            ->get();
+
+        return [
+            'low_selling' => $lowSelling->map(function ($product) {
+                return [
+                    'name' => $product->name,
+                    'quantity' => $product->total_quantity,
+                    'revenue' => number_format($product->total_revenue, 2),
+                ];
+            })->toArray(),
+            'no_sales' => $noSales->map(function ($product) {
+                return [
+                    'name' => $product->name,
+                    'price' => number_format($product->price, 2),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get customers data for PDF export.
+     */
+    private function getCustomersDataForPdf(array $dateRange): array
+    {
+        $topCustomers = Order::select(
+            'users.id',
+            'users.name',
+            'users.email',
+            DB::raw('COUNT(orders.id) as order_count'),
+            DB::raw('SUM(orders.total) as total_spent')
+        )
+            ->join('users', 'orders.user_id', '=', 'users.id')
+            ->whereBetween('orders.created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('orders.status', ['cancelled', 'refunded'])
+            ->groupBy('users.id', 'users.name', 'users.email')
+            ->orderByDesc('total_spent')
+            ->limit(20)
+            ->get();
+
+        $newCustomers = User::where('role', 'customer')
+            ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+            ->count();
+
+        return [
+            'new_customers' => $newCustomers,
+            'top_customers' => $topCustomers->map(function ($customer, $index) {
+                return [
+                    'rank' => $index + 1,
+                    'name' => $customer->name,
+                    'email' => $customer->email,
+                    'orders' => $customer->order_count,
+                    'total_spent' => number_format($customer->total_spent, 2),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get staff data for PDF export.
+     */
+    private function getStaffDataForPdf(array $dateRange): array
+    {
+        $staff = User::where('role', 'staff')->get();
+
+        return [
+            'total_staff' => $staff->count(),
+            'staff_list' => $staff->map(function ($member) {
+                return [
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'joined' => $member->created_at->format('d/m/Y'),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get deliveries data for PDF export.
+     */
+    private function getDeliveriesDataForPdf(array $dateRange): array
+    {
+        $deliveries = Order::whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotNull('delivery_zone_id')
+            ->with(['deliveryZone'])
+            ->get();
+
+        $statusBreakdown = $deliveries->groupBy('status')->map(function ($statusDeliveries, $status) {
+            return [
+                'status' => ucfirst($status),
+                'count' => $statusDeliveries->count(),
+            ];
+        })->values();
+
+        return [
+            'total_deliveries' => $deliveries->count(),
+            'status_breakdown' => $statusBreakdown,
+        ];
+    }
+
+    /**
+     * Get inventory data for PDF export.
+     */
+    private function getInventoryDataForPdf(array $dateRange): array
+    {
+        $products = Product::with('category')->get();
+
+        return [
+            'total_products' => $products->count(),
+            'low_stock' => $products->where('stock', '<=', 10)->count(),
+            'out_of_stock' => $products->where('stock', '=', 0)->count(),
+            'products' => $products->map(function ($product) {
+                return [
+                    'name' => $product->name,
+                    'category' => $product->category->name ?? 'Uncategorized',
+                    'stock' => $product->stock,
+                    'price' => number_format($product->price, 2),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get financial data for PDF export.
+     */
+    private function getFinancialDataForPdf(array $dateRange): array
+    {
+        $orders = Order::whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+            ->whereNotIn('status', ['cancelled', 'refunded'])
+            ->get();
+
+        $totalRevenue = $orders->sum('total');
+        $totalSubtotal = $orders->sum('subtotal');
+        $totalDeliveryFees = $orders->sum('delivery_fee');
+        $totalDiscounts = $orders->sum('discount');
+
+        // Estimate expenses (60% of subtotal as COGS)
+        $estimatedExpenses = $totalSubtotal * 0.6;
+        $grossProfit = $totalRevenue - $estimatedExpenses;
+
+        return [
+            'revenue' => [
+                'total' => number_format($totalRevenue, 2),
+                'subtotal' => number_format($totalSubtotal, 2),
+                'delivery_fees' => number_format($totalDeliveryFees, 2),
+            ],
+            'discounts' => number_format($totalDiscounts, 2),
+            'expenses' => [
+                'estimated' => number_format($estimatedExpenses, 2),
+                'note' => 'Estimated at 60% of subtotal (COGS)',
+            ],
+            'profit' => [
+                'gross' => number_format($grossProfit, 2),
+                'margin' => $totalRevenue > 0 ? round(($grossProfit / $totalRevenue) * 100, 1) : 0,
+            ],
+        ];
+    }
+
+    /**
+     * Get payment methods data for PDF export.
+     */
+    private function getPaymentMethodsDataForPdf(array $dateRange): array
+    {
+        $payments = Payment::whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+            ->where('status', 'completed')
+            ->with('order')
+            ->get();
+
+        $methodBreakdown = $payments->groupBy('gateway')->map(function ($methodPayments, $gateway) {
+            return [
+                'method' => ucfirst($gateway),
+                'count' => $methodPayments->count(),
+                'total' => number_format($methodPayments->sum('amount'), 2),
+            ];
+        })->values();
+
+        return [
+            'total_transactions' => $payments->count(),
+            'total_amount' => number_format($payments->sum('amount'), 2),
+            'method_breakdown' => $methodBreakdown,
         ];
     }
 

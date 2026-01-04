@@ -7,7 +7,7 @@
  * @requirement CHK-008 Create payment method selection
  * @requirement CHK-015 Create promo code input
  */
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useCheckoutStore } from '@/stores/checkout'
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector.vue'
 import PromoCodeInput from '@/components/checkout/PromoCodeInput.vue'
@@ -17,6 +17,13 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const checkoutStore = useCheckoutStore()
+
+// Ensure payment methods are loaded
+onMounted(() => {
+  console.log('PaymentStep mounted, payment methods:', checkoutStore.paymentMethods)
+  console.log('Current payment method:', checkoutStore.paymentMethod)
+  console.log('Is payment valid:', checkoutStore.isPaymentValid)
+})
 
 const canContinue = computed(() => checkoutStore.isPaymentValid)
 

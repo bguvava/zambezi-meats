@@ -57,11 +57,10 @@ const socialLinks = [
         <div class="col-span-2 md:col-span-4 lg:col-span-1">
           <RouterLink to="/" class="inline-flex items-center gap-2 mb-6">
             <img
-              src="/images/logo.png"
+              src="/images/logo-landscape-white.png"
               alt="Zambezi Meats"
-              class="w-10 h-10 object-contain rounded-full"
+              class="h-12 w-auto object-contain"
             />
-            <span class="text-xl font-bold text-white">Zambezi Meats</span>
           </RouterLink>
           <p class="text-gray-300 text-sm mb-6">
             Premium quality Australian meats, hand-selected by expert butchers and delivered fresh to your doorstep.

@@ -73,4 +73,21 @@ class ProductImage extends Model
     {
         return $query->where('is_primary', true);
     }
+
+    /**
+     * Get the URL accessor for image_path.
+     * This allows the API resource to access $this->url
+     */
+    public function getUrlAttribute(): string
+    {
+        return $this->image_path;
+    }
+
+    /**
+     * Get the thumbnail URL (same as url for now).
+     */
+    public function getThumbnailUrlAttribute(): string
+    {
+        return $this->image_path;
+    }
 }

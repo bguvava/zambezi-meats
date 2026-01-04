@@ -5,8 +5,11 @@
  * Email signup for promotional offers.
  *
  * @requirement LAND-012 Newsletter signup with email capture
+ * @requirement ISSUE-004 Store newsletter subscriptions in database
  */
 import { ref, onMounted } from 'vue'
+import api from '@/services/api'
+import { toast } from 'vue-sonner'
 
 const sectionRef = ref(null)
 const isVisible = ref(false)
@@ -45,12 +48,39 @@ async function handleSubmit() {
 
   isSubmitting.value = true
 
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  try {
+    const response = await api.post('/newsletter/subscribe', {
+      email: email.value
+    })
 
-  isSuccess.value = true
-  isSubmitting.value = false
-  email.value = ''
+    if (response.data.success) {
+      isSuccess.value = true
+      toast.success(response.data.message || 'Successfully subscribed to newsletter!')
+      email.value = ''
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        isSuccess.value = false
+      }, 5000)
+    }
+  } catch (err) {
+    if (err.response?.status === 409) {
+      // Email already subscribed
+      error.value = err.response.data.message || 'This email is already subscribed'
+      toast.error('This email is already subscribed to our newsletter')
+    } else if (err.response?.status === 422) {
+      // Validation error
+      const errors = err.response.data.errors
+      error.value = errors?.email?.[0] || 'Please enter a valid email address'
+      toast.error(error.value)
+    } else {
+      error.value = 'Failed to subscribe. Please try again later.'
+      toast.error('Failed to subscribe. Please try again later.')
+      console.error('Newsletter subscription error:', err)
+    }
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 

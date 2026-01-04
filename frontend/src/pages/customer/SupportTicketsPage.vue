@@ -142,6 +142,31 @@ async function sendReply() {
   }
 }
 
+const showCancelModal = ref(false)
+
+async function confirmCancelTicket() {
+  if (!selectedTicket.value) return
+
+  const result = await ticketsStore.cancelTicket(selectedTicket.value.id)
+
+  if (result.success) {
+    toast.success('Ticket cancelled successfully')
+    showCancelModal.value = false
+    closeTicketDetail()
+    // Refresh tickets list
+    await fetchTickets()
+  } else {
+    toast.error(result.message)
+  }
+}
+
+function canCancelTicket(ticket) {
+  return ticket && 
+         ticket.status !== 'resolved' && 
+         ticket.status !== 'closed' && 
+         ticket.status !== 'cancelled'
+}
+
 function formatDate(dateString) {
   if (!dateString) return ''
   return new Date(dateString).toLocaleDateString('en-AU', {
@@ -195,11 +220,16 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            <div class="text-sm text-gray-500">
-              <div class="flex items-center gap-2">
+            <div class="flex flex-col items-end gap-3">
+              <div class="text-sm text-gray-500 flex items-center gap-2">
                 <Clock class="w-4 h-4" />
                 Created {{ formatDate(selectedTicket.created_at) }}
               </div>
+              <button v-if="canCancelTicket(selectedTicket)" @click="showCancelModal = true"
+                class="inline-flex items-center px-4 py-2 border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+                <X class="w-5 h-5 mr-2" />
+                Cancel Ticket
+              </button>
             </div>
           </div>
 
@@ -430,6 +460,39 @@ onMounted(() => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Cancel Ticket Confirmation Modal -->
+        <Transition name="modal">
+          <div v-if="showCancelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-black/50" @click="showCancelModal = false"></div>
+
+            <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div class="p-6">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle class="w-8 h-8 text-red-600" />
+                </div>
+
+                <h2 class="text-xl font-bold text-gray-900 text-center mb-2">Cancel Ticket?</h2>
+                <p class="text-gray-600 text-center mb-6">
+                  Are you sure you want to cancel this ticket? This action cannot be undone.
+                  You'll need to create a new ticket if you need further assistance.
+                </p>
+
+                <div class="flex gap-3">
+                  <button @click="showCancelModal = false"
+                    class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                    Keep Ticket
+                  </button>
+                  <button @click="confirmCancelTicket" :disabled="ticketsStore.isSaving"
+                    class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <Loader2 v-if="ticketsStore.isSaving" class="w-5 h-5 mr-2 animate-spin" />
+                    Yes, Cancel Ticket
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </Transition>

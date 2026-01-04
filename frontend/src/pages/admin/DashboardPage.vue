@@ -78,22 +78,31 @@ const revenueChartData = computed(() => {
   }
 })
 
-// Mock profit vs expenses data (will be replaced with real backend data)
+// Profit vs expenses data (dynamic from backend)
 const profitExpensesData = computed(() => {
-  // Generate mock monthly data
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  
+  if (!dashboardData.value?.profit_expenses_chart) {
+    return {
+      labels: [],
+      datasets: [
+        { label: 'Expenses', data: [], backgroundColor: '#6F6F6F' },
+        { label: 'Profit', data: [], backgroundColor: '#CF0D0F' }
+      ]
+    }
+  }
+
+  const chartData = dashboardData.value.profit_expenses_chart
+
   return {
-    labels: months,
+    labels: chartData.map(item => item.month),
     datasets: [
       {
         label: 'Expenses',
-        data: [12000, 15000, 13000, 14000, 16000, 15500, 17000, 16500, 14000, 15000, 16000, 18000],
+        data: chartData.map(item => item.expenses),
         backgroundColor: '#6F6F6F'
       },
       {
         label: 'Profit',
-        data: [18000, 22000, 19000, 21000, 24000, 23000, 26000, 25000, 21000, 23000, 24000, 28000],
+        data: chartData.map(item => item.profit),
         backgroundColor: '#CF0D0F'
       }
     ]
@@ -196,29 +205,23 @@ function formatCurrency(value) {
 
         <!-- Quick Actions - DASH-015 -->
         <div class="flex flex-wrap items-center gap-2">
-          <button
-            @click="createOrder"
+          <button @click="createOrder"
             class="inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-bold text-white shadow-md hover:shadow-lg transition-all duration-200"
-            style="background: linear-gradient(135deg, #CF0D0F 0%, #F6211F 100%);"
-          >
+            style="background: linear-gradient(135deg, #CF0D0F 0%, #F6211F 100%);">
             <Plus class="w-4 h-4 mr-2" />
             Create Order
           </button>
 
-          <button
-            @click="addProduct"
+          <button @click="addProduct"
             class="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-            style="background-color: #F6211F; color: white;"
-          >
+            style="background-color: #F6211F; color: white;">
             <Package class="w-4 h-4 mr-2" />
             Add Product
           </button>
 
-          <button
-            @click="viewReports"
+          <button @click="viewReports"
             class="inline-flex items-center rounded-lg px-4 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-            style="background-color: #EFEFEF; color: #4D4B4C;"
-          >
+            style="background-color: #EFEFEF; color: #4D4B4C;">
             <FileText class="w-4 h-4 mr-2" />
             Reports
           </button>
@@ -263,17 +266,9 @@ function formatCurrency(value) {
     <div v-else>
       <!-- Stats Cards - DASH-001, DASH-006, DASH-007, DASH-008 -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          v-for="stat in stats"
-          :key="stat.label"
-          :icon="stat.icon"
-          :label="stat.label"
-          :value="stat.value"
-          :change="stat.change"
-          :prefix="stat.prefix"
-          :is-currency="stat.isCurrency"
-          :comparison-text="stat.comparisonText"
-        />
+        <StatCard v-for="stat in stats" :key="stat.label" :icon="stat.icon" :label="stat.label" :value="stat.value"
+          :change="stat.change" :prefix="stat.prefix" :is-currency="stat.isCurrency"
+          :comparison-text="stat.comparisonText" />
       </div>
 
       <!-- Charts Row - DASH-010, DASH-011 -->
@@ -282,14 +277,8 @@ function formatCurrency(value) {
         <div class="bg-white rounded-xl p-6 shadow-md border-2" style="border-color: #CF0D0F;">
           <h3 class="text-lg font-bold mb-4" style="color: #4D4B4C;">Revenue Overview (Last 7 Days)</h3>
           <div style="height: 300px;">
-            <LineChart
-              v-if="revenueChartData.labels.length > 0"
-              :labels="revenueChartData.labels"
-              :data="revenueChartData.data"
-              label="Daily Revenue"
-              color="#CF0D0F"
-              fill-color="rgba(207, 13, 15, 0.1)"
-            />
+            <LineChart v-if="revenueChartData.labels.length > 0" :labels="revenueChartData.labels"
+              :data="revenueChartData.data" label="Daily Revenue" color="#CF0D0F" fill-color="rgba(207, 13, 15, 0.1)" />
             <div v-else class="flex items-center justify-center h-full text-gray-400">
               No revenue data available
             </div>
@@ -300,10 +289,7 @@ function formatCurrency(value) {
         <div class="bg-white rounded-xl p-6 shadow-md border-2" style="border-color: #CF0D0F;">
           <h3 class="text-lg font-bold mb-4" style="color: #4D4B4C;">Profit vs Expenses (Monthly)</h3>
           <div style="height: 300px;">
-            <BarChart
-              :labels="profitExpensesData.labels"
-              :datasets="profitExpensesData.datasets"
-            />
+            <BarChart :labels="profitExpensesData.labels" :datasets="profitExpensesData.datasets" />
           </div>
         </div>
       </div>
@@ -316,34 +302,28 @@ function formatCurrency(value) {
             <h3 class="text-lg font-bold" style="color: #4D4B4C;">Recent Orders</h3>
             <Clock class="w-5 h-5" style="color: #CF0D0F;" />
           </div>
-          
+
           <div v-if="recentOrders.length > 0" class="space-y-3">
-            <div
-              v-for="order in recentOrders"
-              :key="order.id"
+            <div v-for="order in recentOrders" :key="order.id"
               class="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-gray-50"
-              style="border-left: 3px solid #CF0D0F;"
-            >
+              style="border-left: 3px solid #CF0D0F;">
               <div class="flex-1">
                 <p class="text-sm font-bold" style="color: #4D4B4C;">{{ order.order_number }}</p>
                 <p class="text-xs" style="color: #6F6F6F;">{{ order.customer_name }}</p>
               </div>
               <div class="text-right">
                 <p class="text-sm font-bold" style="color: #CF0D0F;">{{ formatCurrency(order.total) }}</p>
-                <span
-                  class="inline-block px-2 py-1 text-xs font-semibold rounded"
-                  :class="{
-                    'bg-green-100 text-green-800': order.status === 'delivered',
-                    'bg-blue-100 text-blue-800': order.status === 'processing',
-                    'bg-yellow-100 text-yellow-800': order.status === 'pending'
-                  }"
-                >
+                <span class="inline-block px-2 py-1 text-xs font-semibold rounded" :class="{
+                  'bg-green-100 text-green-800': order.status === 'delivered',
+                  'bg-blue-100 text-blue-800': order.status === 'processing',
+                  'bg-yellow-100 text-yellow-800': order.status === 'pending'
+                }">
                   {{ order.status }}
                 </span>
               </div>
             </div>
           </div>
-          
+
           <div v-else class="text-center py-8 text-gray-400">
             No recent orders
           </div>
@@ -355,31 +335,24 @@ function formatCurrency(value) {
             <h3 class="text-lg font-bold" style="color: #4D4B4C;">Low Stock Alert</h3>
             <AlertTriangle class="w-5 h-5" style="color: #F6211F;" />
           </div>
-          
+
           <div v-if="lowStockProducts.length > 0" class="space-y-3">
-            <div
-              v-for="product in lowStockProducts"
-              :key="product.id"
+            <div v-for="product in lowStockProducts" :key="product.id"
               class="flex items-center justify-between p-3 rounded-lg"
-              style="background-color: #FEF2F2; border-left: 3px solid #F6211F;"
-            >
+              style="background-color: #FEF2F2; border-left: 3px solid #F6211F;">
               <div class="flex-1">
                 <p class="text-sm font-bold" style="color: #4D4B4C;">{{ product.name }}</p>
                 <p class="text-xs" style="color: #6F6F6F;">Stock remaining</p>
               </div>
               <div class="text-right">
                 <p class="text-lg font-bold" style="color: #F6211F;">{{ product.stock }}</p>
-                <button
-                  @click="manageInventory"
-                  class="text-xs font-semibold hover:underline"
-                  style="color: #CF0D0F;"
-                >
+                <button @click="manageInventory" class="text-xs font-semibold hover:underline" style="color: #CF0D0F;">
                   Restock
                 </button>
               </div>
             </div>
           </div>
-          
+
           <div v-else class="text-center py-8 text-gray-400">
             All products in stock
           </div>
@@ -391,18 +364,13 @@ function formatCurrency(value) {
             <h3 class="text-lg font-bold" style="color: #4D4B4C;">Top Products Today</h3>
             <Package class="w-5 h-5" style="color: #CF0D0F;" />
           </div>
-          
+
           <div v-if="topProducts.length > 0" class="space-y-3">
-            <div
-              v-for="(product, index) in topProducts"
-              :key="product.id"
-              class="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-gray-50"
-            >
+            <div v-for="(product, index) in topProducts" :key="product.id"
+              class="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-gray-50">
               <div class="flex items-center gap-3 flex-1">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                  style="background: linear-gradient(135deg, #CF0D0F 0%, #F6211F 100%);"
-                >
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                  style="background: linear-gradient(135deg, #CF0D0F 0%, #F6211F 100%);">
                   {{ index + 1 }}
                 </div>
                 <div>
@@ -415,7 +383,7 @@ function formatCurrency(value) {
               </div>
             </div>
           </div>
-          
+
           <div v-else class="text-center py-8 text-gray-400">
             No sales today
           </div>

@@ -179,8 +179,8 @@ class CustomerController extends Controller
 
         return response()->json([
             'success' => true,
-            'orders' => OrderResource::collection($orders),
-            'pagination' => [
+            'data' => OrderResource::collection($orders),
+            'meta' => [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
                 'per_page' => $orders->perPage(),
@@ -195,10 +195,12 @@ class CustomerController extends Controller
      * @requirement CUST-004 Order detail view
      * @requirement CUST-005 Order status timeline
      */
-    public function getOrder(Request $request, int $id): JsonResponse
+    public function getOrder(Request $request, string $id): JsonResponse
     {
         $user = $request->user();
 
+        // Try to find by order_number first (string like "ZM-2026-00042")
+        // Otherwise fall back to ID (integer)
         $order = Order::with([
             'items.product',
             'address',
@@ -207,11 +209,15 @@ class CustomerController extends Controller
             'deliveryProof',
         ])
             ->where('user_id', $user->id)
-            ->findOrFail($id);
+            ->where(function ($query) use ($id) {
+                $query->where('order_number', $id)
+                    ->orWhere('id', is_numeric($id) ? (int) $id : 0);
+            })
+            ->firstOrFail();
 
         return response()->json([
             'success' => true,
-            'order' => new OrderResource($order),
+            'data' => new OrderResource($order),
         ]);
     }
 
@@ -409,7 +415,7 @@ class CustomerController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Address added successfully.',
-            'address' => new AddressResource($address),
+            'data' => new AddressResource($address),
         ], 201);
     }
 
@@ -447,7 +453,7 @@ class CustomerController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Address updated successfully.',
-            'address' => new AddressResource($address),
+            'data' => new AddressResource($address),
         ]);
     }
 
@@ -802,6 +808,63 @@ class CustomerController extends Controller
                 'created_at' => $reply->created_at->toIso8601String(),
             ],
         ], 201);
+    }
+
+    /**
+     * Cancel support ticket (soft delete by user).
+     *
+     * @requirement CUST-019 Cancel support ticket
+     * @requirement NOTIF-001 Send email notification on cancellation
+     */
+    public function cancelTicket(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        $ticket = SupportTicket::where('user_id', $user->id)->findOrFail($id);
+
+        // Check if ticket is already cancelled
+        if ($ticket->isCancelled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket is already cancelled.',
+            ], 422);
+        }
+
+        // Check if ticket is already closed/resolved
+        if ($ticket->status === SupportTicket::STATUS_CLOSED || $ticket->status === SupportTicket::STATUS_RESOLVED) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot cancel a resolved or closed ticket.',
+            ], 422);
+        }
+
+        // Cancel the ticket
+        $ticket->cancelByUser();
+
+        // Send confirmation to customer
+        $user->notify(new \App\Notifications\TicketCancellationConfirmation($ticket));
+
+        // Send notification to admin and staff users
+        $this->notifyStaffOfCancellation($ticket);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket cancelled successfully.',
+        ]);
+    }
+
+    /**
+     * Notify admin and staff users about ticket cancellation.
+     */
+    private function notifyStaffOfCancellation(SupportTicket $ticket): void
+    {
+        // Get all admin and staff users
+        $staffUsers = \App\Models\User::whereIn('role', ['admin', 'staff'])->get();
+
+        // Send notification to each staff member
+        foreach ($staffUsers as $staffUser) {
+            $staffUser->notify(new \App\Notifications\TicketCancelledByCustomerNotification($ticket));
+        }
     }
 
     /*

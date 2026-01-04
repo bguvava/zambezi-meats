@@ -25,18 +25,25 @@ class CategoryController extends Controller
      * Display a list of all active categories with product counts.
      *
      * @requirement SHOP-023 GET /api/v1/categories returns all active categories
+     * @requirement ISSUE-008 Filter to show only main categories
      *
      * @param Request $request
      * @return CategoryCollection
      */
     public function index(Request $request): CategoryCollection
     {
-        $categories = Category::query()
+        $query = Category::query()
             ->where('is_active', true)
             ->withCount(['products' => function ($query) {
                 $query->where('is_active', true);
-            }])
-            ->orderBy('sort_order')
+            }]);
+
+        // Filter to main categories only (no parent)
+        if ($request->boolean('main_only', false)) {
+            $query->whereNull('parent_id');
+        }
+
+        $categories = $query->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 

@@ -13,6 +13,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAdminOrdersStore } from '@/stores/adminOrders'
+import api from '@/services/api'
 import {
   ClipboardList,
   Search,
@@ -51,12 +52,9 @@ const refundReason = ref('')
 const refundAmount = ref(0)
 const isProcessing = ref(false)
 
-// Mock staff list (would come from API)
-const staffList = ref([
-  { id: 1, name: 'John Smith' },
-  { id: 2, name: 'Jane Doe' },
-  { id: 3, name: 'Mike Wilson' }
-])
+// Staff list (fetched from API)
+const staffList = ref([])
+const isLoadingStaff = ref(false)
 
 // Status configuration
 const statusConfig = {
@@ -118,6 +116,7 @@ const orderStats = computed(() => {
 // Lifecycle
 onMounted(async () => {
   await fetchOrders()
+  await fetchStaffList()
 })
 
 // Watch for filter changes
@@ -131,6 +130,25 @@ watch([searchQuery, selectedStatus, selectedDate], () => {
 }, { debounce: 300 })
 
 // Methods
+async function fetchStaffList() {
+  isLoadingStaff.value = true
+  try {
+    const response = await api.get('/admin/users', {
+      params: {
+        role: 'staff',
+        per_page: 100,
+        status: 'active'
+      }
+    })
+    staffList.value = response.data.data || response.data || []
+  } catch (err) {
+    console.error('Failed to fetch staff:', err)
+    staffList.value = []
+  } finally {
+    isLoadingStaff.value = false
+  }
+}
+
 async function fetchOrders() {
   try {
     await ordersStore.fetchOrders()

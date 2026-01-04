@@ -1,256 +1,112 @@
-ISSUES FOUND THAT NEED TO BE FIXED:
-# Required color palette: CF0D0F, F6211F, EFEFEF, 6F6F6F, 4D4B4C
-# This system must load as fast as possible and minimalistic, it must be secure, robust, reliable, fully responsive and viewable on all screen sizes.
+======================================
+#ISSUES FOUND THAT NEED TO BE FIXED:
+======================================
+- Required color palette: #CF0D0F, #F6211F, #EFEFEF, #6F6F6F, #4D4B4C. Official logos are in the ".github/" folder (official_logo.png, official_logo-white.png, official_logo_landscape.png, official_logo_landscape_white.png), choose the best based on the placement - the logo files to the appropriate folder.
+- THIS SYSTEM MUST BE FAST, SECURE, ROBUST, AND OPERATE 99.9% UPTIME WITH 0.000% ERRORS. HANDLE PAYMENTS SECURELY ALL THE TIME. 
+======================================
 
-1. Official social media handles for Zambezi Meats are as follows, add only these 3 handles and remove twitter and youtube on the footer section:
-- https://www.facebook.com/share/17hrbEMpKY/
-- https://www.instagram.com/zambezi_meats?igsh=OXZkNjVvb2w2enll
-- https://www.tiktok.com/@zambezi.meats?_r=1&_t=ZS-92Jw9xNcw8O
-
-2. On the cart view, add a button to open the cart in a full page view so that customers can view all their items properly
-
-3. Create Account failing:
-- when users create account and enter all the information, this error is shown: "Registration failed"
-- the browser console is showing these logs:
-auth.js:62  GET http://localhost:8000/api/v1/auth/user 401 (Unauthorized)
-dispatchXhrRequest @ axios.js?v=19c42782:1984
-xhr @ axios.js?v=19c42782:1894
-dispatchRequest @ axios.js?v=19c42782:2363
+#GLOBAL ISSUES:
+1. Front public website:
+## on load there is a browser console log error message which says:
+------------------
+auth.js:87  GET http://localhost:8000/api/v1/auth/user 401 (Unauthorized)
+dispatchXhrRequest @ axios.js?v=87907051:1984
+xhr @ axios.js?v=87907051:1894
+dispatchRequest @ axios.js?v=87907051:2363
 Promise.then
-_request @ axios.js?v=19c42782:2557
-request @ axios.js?v=19c42782:2486
-Axios$1.<computed> @ axios.js?v=19c42782:2594
-wrap @ axios.js?v=19c42782:13
-fetchUser @ auth.js:62
-initialize @ auth.js:47
+_request @ axios.js?v=87907051:2557
+request @ axios.js?v=87907051:2486
+Axios$1.<computed> @ axios.js?v=87907051:2594
+wrap @ axios.js?v=87907051:13
+fetchUser @ auth.js:87
+initialize @ auth.js:59
 await in initialize
-wrappedAction @ pinia.js?v=19c42782:4795
-store.<computed> @ pinia.js?v=19c42782:4482
-(anonymous) @ main.js:39
-auth.js:50 Auth initialization failed: AxiosError$1 {message: 'Request failed with status code 401', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
-initialize @ auth.js:50
-await in initialize
-wrappedAction @ pinia.js?v=19c42782:4795
-store.<computed> @ pinia.js?v=19c42782:4482
-(anonymous) @ main.js:39
-auth.js:109  POST http://localhost:8000/api/v1/auth/register 422 (Unprocessable Content)
-dispatchXhrRequest @ axios.js?v=19c42782:1984
-xhr @ axios.js?v=19c42782:1894
-dispatchRequest @ axios.js?v=19c42782:2363
-Promise.then
-_request @ axios.js?v=19c42782:2557
-request @ axios.js?v=19c42782:2486
-httpMethod @ axios.js?v=19c42782:2608
-wrap @ axios.js?v=19c42782:13
-register @ auth.js:109
-await in register
-wrappedAction @ pinia.js?v=19c42782:4795
-store.<computed> @ pinia.js?v=19c42782:4482
-register @ useAuth.js:50
-handleSubmit @ RegisterPage.vue:192
-(anonymous) @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:8266
-callWithErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1853
-callWithAsyncErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1860
-invoker @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:7497
+wrappedAction @ pinia.js?v=87907051:4795
+store.<computed> @ pinia.js?v=87907051:4482
+(anonymous) @ main.js:51
+------------------
+## on homepage hero section, i want the company name and logo to be more prominent and visible
+## homepage: on Featured products section, the quick view and add to wishlist buttons are not working or responding.
+## homepage: on Featured products section, all the products displayed there must be dynamically fetched from the database as featured/best selling products, not hardcoded products.
+## homepage: Subscriptions: all the subscriptions requests submitted from this section must be stored into the database and be viewable from the admin/staff dashboard via messages
+## homepage: on contact us sections, redesign it and change it to a map section which shows service areas near the proximity of the company address: 6/1053 Old Princes Highway, Engadine, NSW 2233, Australia. Add areas that are in the 50km radius. Remove the contact us form and on use the one on the contact us page.
 
-4. Login Page Errors:
-- when login page loads, it shows these browser console logs:
-auth.js:62  GET http://localhost:8000/api/v1/auth/user 401 (Unauthorized)
-dispatchXhrRequest @ axios.js?v=19c42782:1984
-xhr @ axios.js?v=19c42782:1894
-dispatchRequest @ axios.js?v=19c42782:2363
-Promise.then
-_request @ axios.js?v=19c42782:2557
-request @ axios.js?v=19c42782:2486
-Axios$1.<computed> @ axios.js?v=19c42782:2594
-wrap @ axios.js?v=19c42782:13
-fetchUser @ auth.js:62
-initialize @ auth.js:47
-await in initialize
-wrappedAction @ pinia.js?v=19c42782:4795
-store.<computed> @ pinia.js?v=19c42782:4482
-(anonymous) @ main.js:39
-auth.js:50 Auth initialization failed: AxiosError$1 {message: 'Request failed with status code 401', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
-initialize @ auth.js:50
-await in initialize
-wrappedAction @ pinia.js?v=19c42782:4795
-store.<computed> @ pinia.js?v=19c42782:4482
-(anonymous) @ main.js:39
+##About Us page: add more sections as on home page [about us section]
 
-- after logging in these errors are shown on the browser console:
-index.js:1 content loaded
-index.59b2ae62.js:3 Content Script: Initializing
-useAuth.js:38 [Vue warn]: Extraneous non-props attributes (visible) were passed to component but could not be automatically inherited because component renders fragment or text or teleport root nodes. 
-  at <SessionWarningModal key=0 visible=false onExtend=fn  ... > 
-  at <GuestLayout onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > > 
-  at <RouterView> 
-  at <App>
-warn$1 @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1716
-renderComponentRoot @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:4657
-componentUpdateFn @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5444
-run @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:409
-setupRenderEffect @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5513
-mountComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5399
-processComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5379
-patch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5183
-mountChildren @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5286
-mountElement @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5253
-processElement @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5236
-patch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5182
-componentUpdateFn @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5447
-run @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:409
-setupRenderEffect @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5513
-mountComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5399
-processComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5379
-patch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5183
-componentUpdateFn @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5492
-run @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:409
-runIfDirty @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:436
-callWithErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1853
-flushJobs @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:2002
-Promise.then
-queueFlush @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1944
-queueJob @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1940
-effect$1.scheduler @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5509
-trigger @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:429
-endBatch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:479
-notify @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:694
-trigger @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:686
-set value @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1327
-finalizeNavigation @ vue-router.js?v=19c42782:2630
-(anonymous) @ vue-router.js?v=19c42782:2558
-Promise.then
-pushWithRedirect @ vue-router.js?v=19c42782:2546
-push @ vue-router.js?v=19c42782:2499
-login @ useAuth.js:38
-await in login
-handleSubmit @ LoginPage.vue:97
-(anonymous) @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:8266
-callWithErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1853
-callWithAsyncErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1860
-invoker @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:7497
-useAuth.js:38 [Vue warn]: Extraneous non-emits event listeners (extend, logout) were passed to component but could not be automatically inherited because component renders fragment or text root nodes. If the listener is intended to be a component custom event listener only, declare it using the "emits" option. 
-  at <SessionWarningModal key=0 visible=false onExtend=fn  ... > 
-  at <GuestLayout onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > > 
-  at <RouterView> 
-  at <App>
-warn$1 @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1716
-renderComponentRoot @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:4658
-componentUpdateFn @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5444
-run @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:409
-setupRenderEffect @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5513
-mountComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5399
-processComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5379
-patch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5183
-mountChildren @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5286
-mountElement @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5253
-processElement @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5236
-patch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5182
-componentUpdateFn @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5447
-run @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:409
-setupRenderEffect @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5513
-mountComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5399
-processComponent @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5379
-patch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5183
-componentUpdateFn @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5492
-run @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:409
-runIfDirty @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:436
-callWithErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1853
-flushJobs @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:2002
-Promise.then
-queueFlush @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1944
-queueJob @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1940
-effect$1.scheduler @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:5509
-trigger @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:429
-endBatch @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:479
-notify @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:694
-trigger @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:686
-set value @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1327
-finalizeNavigation @ vue-router.js?v=19c42782:2630
-(anonymous) @ vue-router.js?v=19c42782:2558
-Promise.then
-pushWithRedirect @ vue-router.js?v=19c42782:2546
-push @ vue-router.js?v=19c42782:2499
-login @ useAuth.js:38
-await in login
-handleSubmit @ LoginPage.vue:97
-(anonymous) @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:8266
-callWithErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1853
-callWithAsyncErrorHandling @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:1860
-invoker @ vue.runtime.esm-bundler-d6NXi4lR.js?v=19c42782:7497
+##Contact us page: add a hero section same as on the about us page to make the design feel the same. 
+##Contact us page: add a honeypot spam filter so that bots are not used to spam/phish the business.   
+##Contact us page: all the contact form submissions must be stored into the database and viewable by the admin/staff via their dashboards 
 
-5. Shopping and Cart errors:
-- when shopping, if user clicks + to add kgs/weight of any product before adding the item to the cart - the kg numbers dissapear
-- when the product is added to the cart, the weight will be written as "NaNkg" and the total shows as "$NaN" and the products page shows "NaNkg in cart"
-- when customer clicks the product from the cart list, they get a 404 not found page. 
+##Shop page: the categories on the left panel are too many reduce them to only main categories, dynamically fetch these categories from the database do not hard code them. 
+##Shop page: get real product images from the free sites and download them into the product codebase "frontend/public/iamges". The product images must match the real products and must also be stored into the database and fetched dynamically. Remove all placeholder images and use the reall images. 
+
+2. This system is mainly for Australian target market, so everything must be localised to Australia: currency, locations, language, etc. The default currency must be AUD$, and the default location must be in the radius of the comapny offices/location. 
+
+3. Session persistance issues:
+## when customer logs in and opens the shop, when they try to access their dashboard, they are asked to login again and they are automatically redirected to the "/login?session_expired=true" but they will be currecntly logged in. This happening for all user roles. 
+## when a differenct role logs in they
+## on broswer refresh from the dashboard (all roles), the user is automatically logged out and redirected to the login page. the session must stay persistant.
+
+4. Session Locked screen:
+## redesign the session lock screen its height is too long (check the screenshot .github/BUGS/lockout.png), most screens will not be able to dsiplay it without zooming. it must be minimalist and centered on the screen. 
+## when users enter the password from the lock screen, the system is not unloacking and the session is not being restore. its just looping and stuck on the lockscreen. 
+##lockout duration must be 5 mins, its locking too quickily before 5 minutes. some times the locking warning appears during the time when the user is using the system 
+
+5. My Profile:
+## Redesign the my profile page to be more minimalistic there is too much blank white space. Check attached screenshot (.github/BUGS/my_profile.png), Personal Information and Change Password must be side by side. 
+## change buttons to red and maintain visual consistency with other modules. 
+## for all users, use the default picture as frontend/public/images/user.jpg and it must be consistent in the database. User will change the profile pictures as they desire. 
+
+6. Dashboard Footer Adjustment: 
+##Adjust the height of the logout button section on the sidebar to match the same height as the footer section of all the dashboards. Check the attached screenshot (.github/BUGS/dashboard_footer.png). This must be adjusted for all dashboards and user roles. 
+
+7. Sidebar Menu Adjustments:
+##The current sidebar menu views are not prioritizing the menu items view, some of the menu items i hidden and users have to scroll to view and see all the menus. Check attached screenshots for all user roles: (".github/BUGS/admin_staff_sidebar.png" and ".github/BUGS/customer_sidebar.png")
+##On the admin/staff sidebar menus: move the sidebar expand/collapse icon to top next to the company name. Utilize the blank space between menu items and the logout button to display more menu items. Reduce the height of the logout button to match the height of the dashboard footer. 
+##On the customer sidebar menu: move the sidebar expand/collapse icon to top next to the company name. Utilize the blank space between menu items and the logout button to display more menu items. Reduce the height of the logout button to match the height of the dashboard footer. Remove the back to shop button or place it just bove the logout button. 
+
+======================================
+======================================
+
+#ADMIN ISSUES:
 
 
-6. Favico: use this favico "frontend/public/images/favico.ico"
+======================================
+======================================
 
-7. Home page load errors: on home page load, the browser console shows these browser console errors: 
-auth.js:62  GET http://localhost:8000/api/v1/auth/user 401 (Unauthorized)
-dispatchXhrRequest @ axios.js?v=19c42782:1984
-xhr @ axios.js?v=19c42782:1894
-dispatchRequest @ axios.js?v=19c42782:2363
-Promise.then
-_request @ axios.js?v=19c42782:2557
-request @ axios.js?v=19c42782:2486
-Axios$1.<computed> @ axios.js?v=19c42782:2594
-wrap @ axios.js?v=19c42782:13
-fetchUser @ auth.js:62
-initialize @ auth.js:47
-await in initialize
-wrappedAction @ pinia.js?v=19c42782:4795
-store.<computed> @ pinia.js?v=19c42782:4482
-(anonymous) @ main.js:39
-auth.js:50 Auth initialization failed: AxiosError$1 {message: 'Request failed with status code 401', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
-initialize @ auth.js:50
-await in initialize
-wrappedAction @ pinia.js?v=19c42782:4795
-store.<computed> @ pinia.js?v=19c42782:4482
-(anonymous) @ main.js:39
+#STAFF ISSUES:
 
-8. Checkout: when customer clicks the checkout, they are shown the login screen even though they are already logged in, they must proceed to the payment page instead if they are already logged in. If not logged in they must first login if they have the account. if they do not have an account they must:
-i) either create an account and return or be redirected to the checkout page, secure the checkout process and make sure the users are authenticated on paying. 
-ii) implement the best way to accomodate once off buyers who do not want to create an account, they must fully provide their details for account/customer identification and delivery purposes
-- the main payment platform for this project is Stripe (with Paypal, Visa, Mastercard, Afterpay), Afterpay is the commonly used payment method. 
 
-9. when customers login and they click on user dropdown menu - the My dashboard menu leads to a 404 not found page instead of the customer dashboard. Fix the whole authentication flow, from account creation, logging in, all menus must respond correctly, and the cart and checkout must proceed accordingly when user is logged in. Secure the checkout process. 
+======================================
+======================================
 
-10. Admin dashboard panel: we have developed and implemented all the admin modules that are on the admin sidebar navigation menu, but when admin clicks to access them, all of them have nothing on them, this is what they show:
-- Dashboard module (/admin) shows this only: Info  card widgets and  Welcome to the admin dashboard. Manage your store from here.
-- Users module (/admin/users) shows this only: Manage user accounts, roles, and permissions.
-- Products module (/admin/products) shows this only: Add, edit, and manage your product catalog.
-- Categories module (/admin/categories) shows this only: Create and manage product categories and subcategories.
-- Orders module (/admin/orders) shows this only: View and manage all customer orders.
-- Inventory module (/admin/inventory) shows this only: Track and manage product inventory levels.
-- Reports module (/admin/reports) shows this only: View sales reports and business analytics.
-- Settings module (/admin/settings) shows this only: Configure store settings and system preferences.
+#CUSTOMER ISSUES:
 
-11. Staff Dashboard panel: we have developed and implemented all the staff modules that are on the admin sidebar navigation menu, but when admin clicks to access them, all of them have nothing on them, this is what they show:
-- Dashboard (/staff): shows static data, must fetch real dynamic data from the database for that specific staff
-- Orders (/staff/orders): shows static data, must fetch real dynamic data from the database for that specific staff
-- My Deliveries (/staff/deliveries): : shows static data, must fetch real dynamic data from the database for that specific staff
+1. On successfull login, customers must be redirected to their dashboard not to the shop. If they want to shop they can click on any links back to shop. 
 
-12. Customer Dashboard Panel: we have developed and implemented all the staff modules that are on the admin sidebar navigation menu, but when admin clicks to access them, all of them have nothing on them, this is what they show:
-- Dashboard () must fetch real dynamic data from the database for that specific customer
-- Orders module (/customer/orders): shows static data, must fetch real dynamic data from the database for that specific customer
-- My Profile (/customer/profile) : shows static data, must fetch real dynamic data from the database for that specific customer
-- My Addresses(/customer/addresses): shows static data, must fetch real dynamic data from the database for that specific customer
-- My Wishlist (/customer/wishlist): shows static data, must fetch real dynamic data from the database for that specific customer
+2. Session persistance issues:
+## when customer logs in and opens the shop, when they try to access their dashboard, they are asked to login again and they are automatically redirected to the "/login?session_expired=true" but they will be currecntly logged in. This happening for all user roles
 
-13. When all users click on logout, they must automatically be redirected to the homepage with a fresh and clean session (clear all sessions and cookies automatically)
+3. Customer Dashboard:
+## on Recent Orders: when user clicks View Order button, it redirects to "/customer/orders/?" but the Order detail page is showing hardcoded data, it must fetch real dynamic data from the database about the order details. 
+## on Recent Orders: when user clicks View All link, it redirects to "/customer/orders/" but the Orders page is showing "No Orders Yet" even though the orders are there, it must fetch real dynamic data from the database about the orders.
+## the info card widgets on the dashboard are too big and some icons are not visible (check attached .github/BUGS/customer_infos.png): redisign them to be more minimalistic and redable, reduce their size they serve as informational and must not take too much space. 
+
+4. My Orders:
+## customer's My Orders module page (/customer/orders) is not fetching real dynamic data from the system database. It is showing "No Orders Yet" even though the customer has orders. 
+
+5. My Addresses:
+## customer's My Addresses module page (/customer/addresses) is not fetching real dynamic data from the system database. It is showing "No Orders Yet" even though the customer has addresses.
+
+6. My Wishlist (/customer/wishlist):
+## customer's My wishlist module page (/customer/wishlist) is not fetching real dynamic data from the system database. It is showing "Your Wishlist is Empty and Sample Product $XX.XX / kg" even though the customer has clicked on some products to be added to wishlist. (check attached .github/BUGS/wishlist.png)
+## the wishlist icons on the products are not adding the products to the wish list, fix the whole wishlist workflow so that customers can CRUD own wishlist
+
+7. Support Tickets (/customer/support):
+##Add CRUD action buttons for customer tickets, they can soft delete/cancel any ticket from their end and mark the ticket as deleted/cancelled by user. 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
+======================================

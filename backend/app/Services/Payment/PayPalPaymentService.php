@@ -6,6 +6,8 @@ namespace App\Services\Payment;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\InvoiceService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -15,15 +17,22 @@ use Illuminate\Support\Facades\Log;
  * Handles PayPal payment processing using PayPal REST API.
  *
  * @requirement CHK-010 Integrate PayPal payment
+ * @requirement SET-028 Use settings from database
  */
 class PayPalPaymentService implements PaymentServiceInterface
 {
     private string $baseUrl;
     private ?string $accessToken = null;
+    private SettingsService $settings;
+    private InvoiceService $invoiceService;
 
-    public function __construct()
+    public function __construct(?SettingsService $settings = null, ?InvoiceService $invoiceService = null)
     {
-        $this->baseUrl = config('services.paypal.sandbox')
+        $this->settings = $settings ?? app(SettingsService::class);
+        $this->invoiceService = $invoiceService ?? app(InvoiceService::class);
+
+        $isSandbox = $this->settings->getPayPalMode() === 'sandbox';
+        $this->baseUrl = $isSandbox
             ? 'https://api-m.sandbox.paypal.com'
             : 'https://api-m.paypal.com';
     }
@@ -41,7 +50,7 @@ class PayPalPaymentService implements PaymentServiceInterface
      */
     public function isEnabled(): bool
     {
-        return !empty(config('services.paypal.client_id'));
+        return $this->settings->isPayPalEnabled() && !empty($this->settings->getPayPalClientId());
     }
 
     /**
@@ -105,9 +114,14 @@ class PayPalPaymentService implements PaymentServiceInterface
                 ],
             ]);
 
+            // Generate invoice
+            $invoice = $this->invoiceService->generateFromOrder($order);
+
             return [
                 'success' => true,
                 'payment_id' => $payment->id,
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
                 'paypal_order_id' => $paypalOrder['id'],
                 'approve_url' => $approveUrl,
             ];
@@ -163,6 +177,11 @@ class PayPalPaymentService implements PaymentServiceInterface
                 ]);
 
                 $payment->order->update(['status' => Order::STATUS_CONFIRMED]);
+
+                // Mark invoice as paid
+                if ($payment->order->invoice) {
+                    $this->invoiceService->markAsPaid($payment->order->invoice);
+                }
 
                 return [
                     'success' => true,
@@ -302,8 +321,8 @@ class PayPalPaymentService implements PaymentServiceInterface
         }
 
         try {
-            $clientId = config('services.paypal.client_id');
-            $clientSecret = config('services.paypal.client_secret');
+            $clientId = $this->settings->getPayPalClientId();
+            $clientSecret = $this->settings->getPayPalSecret();
 
             $response = Http::withBasicAuth($clientId, $clientSecret)
                 ->asForm()

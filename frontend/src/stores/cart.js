@@ -12,6 +12,7 @@ import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { useCurrencyStore } from "./currency";
 import { useAuthStore } from "./auth";
+import { useAppSettingsStore } from "./appSettings";
 import api from "@/services/api";
 
 const STORAGE_KEY = "zambezi_cart";
@@ -25,8 +26,14 @@ export const useCartStore = defineStore("cart", () => {
   const error = ref(null);
   const lastSyncedAt = ref(null);
 
-  // Minimum order amount in AUD
-  const MINIMUM_ORDER = 100;
+  // Get app settings store for dynamic minimum order
+  const appSettingsStore = useAppSettingsStore();
+
+  /**
+   * Minimum order amount from settings (dynamic)
+   * @requirement SET-028 Use settings across system
+   */
+  const MINIMUM_ORDER = computed(() => appSettingsStore.minimumOrderAmount);
 
   // Get stores
   const currencyStore = useCurrencyStore();
@@ -49,10 +56,12 @@ export const useCartStore = defineStore("cart", () => {
 
   const isEmpty = computed(() => items.value.length === 0);
 
-  const meetsMinimumOrder = computed(() => subtotal.value >= MINIMUM_ORDER);
+  const meetsMinimumOrder = computed(
+    () => subtotal.value >= MINIMUM_ORDER.value
+  );
 
   const amountToMinimum = computed(() =>
-    Math.max(0, MINIMUM_ORDER - subtotal.value)
+    Math.max(0, MINIMUM_ORDER.value - subtotal.value)
   );
 
   const amountToMinimumFormatted = computed(() =>

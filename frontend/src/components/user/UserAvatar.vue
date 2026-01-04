@@ -4,7 +4,7 @@
     sizeClasses,
     colorClasses
   ]" :title="name">
-    <img v-if="src" :src="src" :alt="name" class="h-full w-full rounded-full object-cover" @error="handleImageError" />
+    <img v-if="displaySrc" :src="displaySrc" :alt="name" class="h-full w-full rounded-full object-cover" @error="handleImageError" />
     <span v-else>{{ initials }}</span>
   </div>
 </template>
@@ -34,6 +34,11 @@ const props = defineProps({
 
 const imageError = ref(false)
 
+const displaySrc = computed(() => {
+  if (imageError.value) return null
+  return props.src || '/images/user.jpg'
+})
+
 const initials = computed(() => {
   if (!props.name) return '?'
 
@@ -57,7 +62,8 @@ const sizeClasses = computed(() => {
 })
 
 const colorClasses = computed(() => {
-  if (props.src && !imageError.value) return ''
+  // If showing image (user avatar or default), no background
+  if (displaySrc.value) return ''
 
   const colors = {
     red: 'bg-red-100 text-red-700',

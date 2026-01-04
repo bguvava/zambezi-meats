@@ -58,6 +58,7 @@ class OrderResource extends JsonResource
             'address' => new AddressResource($this->whenLoaded('address')),
             'delivery_zone' => new DeliveryZoneResource($this->whenLoaded('deliveryZone')),
             'payment' => new PaymentResource($this->whenLoaded('payment')),
+            'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
             'user' => $this->whenLoaded('user', function () {
                 return [
                     'id' => $this->user->id,

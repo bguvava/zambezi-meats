@@ -11,6 +11,8 @@ import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useCurrencyStore } from '@/stores/currency'
+import { useWishlistStore } from '@/stores/wishlist'
+import { useToast } from '@/composables/useToast'
 
 const props = defineProps({
   product: {
@@ -27,22 +29,32 @@ const emit = defineEmits(['quick-view'])
 
 const cartStore = useCartStore()
 const currencyStore = useCurrencyStore()
+const wishlistStore = useWishlistStore()
+const toast = useToast()
 
 const quantity = ref(1)
 const isAdding = ref(false)
 const showSuccess = ref(false)
+const isTogglingWishlist = ref(false)
 
 const isInCart = computed(() => cartStore.isInCart(props.product.id))
 const cartQuantity = computed(() => cartStore.getQuantity(props.product.id))
+const isInWishlist = computed(() => wishlistStore.isInWishlist(props.product.id))
 
 // Watch quantity to ensure it's always valid
 function validateQuantity() {
+  // Convert to number if string
+  const numValue = Number(quantity.value)
+  
   // Ensure quantity is a valid number and at least 0.5
-  if (isNaN(quantity.value) || quantity.value === null || quantity.value === undefined || quantity.value === '' || quantity.value < 0.5) {
+  if (isNaN(numValue) || numValue === null || numValue === undefined || numValue === '' || numValue < 0.5) {
     quantity.value = 0.5
+    return
   }
+  
   // Round to nearest 0.5
-  quantity.value = Math.round(quantity.value * 2) / 2
+  quantity.value = Math.round(numValue * 2) / 2
+  
   // Don't exceed stock
   if (quantity.value > props.product.stock_quantity) {
     quantity.value = props.product.stock_quantity
@@ -104,6 +116,24 @@ async function handleAddToCart() {
 function openQuickView() {
   emit('quick-view', props.product)
 }
+
+async function toggleWishlist() {
+  if (isTogglingWishlist.value) return
+  
+  isTogglingWishlist.value = true
+  try {
+    const result = await wishlistStore.toggleWishlist(props.product.id)
+    if (result.success) {
+      toast.success(result.message)
+    } else {
+      toast.error(result.message)
+    }
+  } catch (error) {
+    toast.error('Failed to update wishlist')
+  } finally {
+    isTogglingWishlist.value = false
+  }
+}
 </script>
 
 <template>
@@ -131,6 +161,18 @@ function openQuickView() {
           Out of Stock
         </span>
       </div>
+
+      <!-- Wishlist Button -->
+      <button 
+        @click.prevent="toggleWishlist"
+        :disabled="isTogglingWishlist"
+        class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md transition-all duration-200 hover:bg-white hover:scale-110"
+        :class="{ 'text-red-500': isInWishlist, 'text-gray-400': !isInWishlist }"
+        title="Add to Wishlist">
+        <svg class="w-5 h-5" :fill="isInWishlist ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      </button>
 
       <!-- Quick View Button -->
       <button v-if="showQuickView && !isOutOfStock" @click.prevent="openQuickView"

@@ -244,7 +244,7 @@ function getStatusText(status) {
       <!-- Dashboard Content -->
       <div v-else>
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatCard v-for="(stat, index) in stats" :key="index" :icon="stat.icon" :icon-background="stat.iconBackground"
             :label="stat.label" :value="stat.value" :show-change="stat.showChange" />
         </div>

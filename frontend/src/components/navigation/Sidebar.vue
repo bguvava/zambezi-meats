@@ -56,12 +56,12 @@ function toggleSidebar() {
     <!-- Logo Section -->
     <div class="h-16 flex items-center justify-center border-b-2 border-gray-200 px-4">
       <router-link to="/" class="flex items-center space-x-2">
-        <div class="w-10 h-10 bg-gradient-to-br from-[#CF0D0F] to-[#F6211F] rounded-lg flex items-center justify-center flex-shrink-0">
-          <span class="text-white font-bold text-xl">ZM</span>
-        </div>
+        <img src="/images/logo-white.png" alt="Zambezi Meats" 
+          :class="isCollapsed ? 'h-10 w-10' : 'h-12 w-12'" 
+          class="object-contain transition-all" />
         <transition name="fade">
           <span v-if="!isCollapsed" :class="['font-bold text-gray-900 transition-all', logoSize]">
-            Zambezi
+            Zambezi Meats
           </span>
         </transition>
       </router-link>

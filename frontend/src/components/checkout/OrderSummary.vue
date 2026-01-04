@@ -40,11 +40,12 @@ function getProductImage(item) {
     item.product?.primary_image ||
     item.product?.thumbnail ||
     item.product?.image ||
+    item.product?.images?.[0]?.url ||
     item.product?.images?.[0] ||
     null
 
   // If we have an image source, check if it needs a base URL
-  if (imageSrc) {
+  if (imageSrc && typeof imageSrc === 'string') {
     // If it's already an absolute URL, return as-is
     if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
       return imageSrc

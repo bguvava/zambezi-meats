@@ -6,6 +6,8 @@ namespace App\Services\Payment;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\InvoiceService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -15,16 +17,24 @@ use Illuminate\Support\Facades\Log;
  * Handles Afterpay payment processing.
  *
  * @requirement CHK-011 Integrate Afterpay payment
+ * @requirement SET-028 Use settings from database
  */
 class AfterpayPaymentService implements PaymentServiceInterface
 {
     private const GATEWAY_AFTERPAY = 'afterpay';
 
     private string $baseUrl;
+    private SettingsService $settings;
+    private InvoiceService $invoiceService;
 
-    public function __construct()
+    public function __construct(?SettingsService $settings = null, ?InvoiceService $invoiceService = null)
     {
-        $this->baseUrl = config('services.afterpay.sandbox')
+        $this->settings = $settings ?? app(SettingsService::class);
+        $this->invoiceService = $invoiceService ?? app(InvoiceService::class);
+
+        // Determine mode from settings (default to sandbox for safety)
+        $isSandbox = config('services.afterpay.sandbox', true);
+        $this->baseUrl = $isSandbox
             ? 'https://global-api-sandbox.afterpay.com'
             : 'https://global-api.afterpay.com';
     }
@@ -42,7 +52,7 @@ class AfterpayPaymentService implements PaymentServiceInterface
      */
     public function isEnabled(): bool
     {
-        return !empty(config('services.afterpay.merchant_id'));
+        return $this->settings->isAfterpayEnabled() && !empty($this->settings->getAfterpayMerchantId());
     }
 
     /**
@@ -115,8 +125,8 @@ class AfterpayPaymentService implements PaymentServiceInterface
             }
 
             $response = Http::withBasicAuth(
-                config('services.afterpay.merchant_id'),
-                config('services.afterpay.secret_key')
+                $this->settings->getAfterpayMerchantId(),
+                $this->settings->getAfterpaySecret()
             )->post("{$this->baseUrl}/v2/checkouts", [
                 'amount' => [
                     'amount' => number_format((float) $order->total, 2, '.', ''),
@@ -154,9 +164,14 @@ class AfterpayPaymentService implements PaymentServiceInterface
                 ],
             ]);
 
+            // Generate invoice
+            $invoice = $this->invoiceService->generateFromOrder($order);
+
             return [
                 'success' => true,
                 'payment_id' => $payment->id,
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
                 'checkout_token' => $checkoutData['token'],
                 'redirect_url' => $checkoutData['redirectCheckoutUrl'],
                 'installments' => self::calculateInstallments((float) $order->total),
@@ -188,8 +203,8 @@ class AfterpayPaymentService implements PaymentServiceInterface
             $token = $data['token'] ?? $payment->transaction_id;
 
             $response = Http::withBasicAuth(
-                config('services.afterpay.merchant_id'),
-                config('services.afterpay.secret_key')
+                $this->settings->getAfterpayMerchantId(),
+                $this->settings->getAfterpaySecret()
             )->post("{$this->baseUrl}/v2/payments/capture", [
                 'token' => $token,
                 'merchantReference' => $payment->order->order_number,
@@ -215,6 +230,11 @@ class AfterpayPaymentService implements PaymentServiceInterface
                 ]);
 
                 $payment->order->update(['status' => Order::STATUS_CONFIRMED]);
+
+                // Mark invoice as paid
+                if ($payment->order->invoice) {
+                    $this->invoiceService->markAsPaid($payment->order->invoice);
+                }
 
                 return [
                     'success' => true,
@@ -255,8 +275,8 @@ class AfterpayPaymentService implements PaymentServiceInterface
             $refundAmount = $amount ?? $payment->amount;
 
             $response = Http::withBasicAuth(
-                config('services.afterpay.merchant_id'),
-                config('services.afterpay.secret_key')
+                $this->settings->getAfterpayMerchantId(),
+                $this->settings->getAfterpaySecret()
             )->post("{$this->baseUrl}/v2/payments/{$afterpayOrderId}/refund", [
                 'amount' => [
                     'amount' => number_format((float) $refundAmount, 2, '.', ''),

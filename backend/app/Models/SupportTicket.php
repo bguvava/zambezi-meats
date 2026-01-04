@@ -33,6 +33,7 @@ class SupportTicket extends Model
     public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_RESOLVED = 'resolved';
     public const STATUS_CLOSED = 'closed';
+    public const STATUS_CANCELLED = 'cancelled';
 
     /**
      * Priority constants.
@@ -54,6 +55,8 @@ class SupportTicket extends Model
         'message',
         'status',
         'priority',
+        'cancelled_at',
+        'cancelled_by_user',
     ];
 
     /**
@@ -110,6 +113,26 @@ class SupportTicket extends Model
     public function resolve(): void
     {
         $this->update(['status' => self::STATUS_RESOLVED]);
+    }
+
+    /**
+     * Cancel the ticket by user.
+     */
+    public function cancelByUser(): void
+    {
+        $this->update([
+            'status' => self::STATUS_CANCELLED,
+            'cancelled_at' => now(),
+            'cancelled_by_user' => true,
+        ]);
+    }
+
+    /**
+     * Check if ticket is cancelled.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
     }
 
     /**

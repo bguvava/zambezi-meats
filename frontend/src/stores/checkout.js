@@ -53,8 +53,27 @@ export const useCheckoutStore = defineStore("checkout", () => {
   const promoMessage = ref("");
 
   // Payment
-  const paymentMethod = ref("stripe");
-  const paymentMethods = ref([]);
+  const paymentMethod = ref("");
+  const paymentMethods = ref([
+    {
+      id: "stripe",
+      name: "Credit/Debit Card",
+      description: "Pay securely with your credit or debit card",
+      enabled: true,
+    },
+    {
+      id: "paypal",
+      name: "PayPal",
+      description: "Pay with your PayPal account",
+      enabled: true,
+    },
+    {
+      id: "cod",
+      name: "Cash on Delivery",
+      description: "Pay when you receive your order",
+      enabled: true,
+    },
+  ]);
 
   // Order notes
   const orderNotes = ref("");
@@ -102,7 +121,7 @@ export const useCheckoutStore = defineStore("checkout", () => {
   });
 
   const isPaymentValid = computed(() => {
-    return paymentMethod.value !== null;
+    return paymentMethod.value !== null && paymentMethod.value !== "";
   });
 
   const canProceedToPayment = computed(() => {
@@ -158,11 +177,16 @@ export const useCheckoutStore = defineStore("checkout", () => {
         params: { subtotal: subtotal.value, currency: "AUD" },
       });
 
-      if (response.data.methods) {
+      if (response.data.methods && response.data.methods.length > 0) {
         paymentMethods.value = response.data.methods;
+        console.log("Loaded payment methods from API:", response.data.methods);
+      } else {
+        console.log("Using default payment methods (API returned empty)");
       }
     } catch (err) {
       console.error("Failed to load payment methods:", err);
+      console.log("Using default payment methods (API error)");
+      // Default methods already set in ref initialization
     }
   }
 
@@ -317,9 +341,11 @@ export const useCheckoutStore = defineStore("checkout", () => {
       if (deliveryForm.value.addressId) {
         orderData.address_id = deliveryForm.value.addressId;
       } else {
-        orderData.street_address = deliveryForm.value.streetAddress;
+        // Map frontend fields to backend expected fields
+        orderData.street = deliveryForm.value.streetAddress;
         orderData.apartment = deliveryForm.value.apartment || null;
-        orderData.suburb = deliveryForm.value.suburb;
+        orderData.city = deliveryForm.value.suburb; // Backend expects 'city'
+        orderData.suburb = deliveryForm.value.suburb; // Also send suburb
         orderData.state = deliveryForm.value.state;
         orderData.postcode = deliveryForm.value.postcode;
         orderData.save_address = deliveryForm.value.saveAddress;
@@ -412,7 +438,14 @@ export const useCheckoutStore = defineStore("checkout", () => {
     error.value = null;
 
     try {
-      const endpoint = `/checkout/payment/${paymentMethod.value}/confirm`;
+      // Determine payment method from data or current selection
+      const gateway = data.paypal_order_id
+        ? "paypal"
+        : data.token
+        ? "afterpay"
+        : paymentMethod.value;
+
+      const endpoint = `/checkout/payment/${gateway}/confirm`;
       const response = await api.post(endpoint, data);
 
       if (response.data.success) {

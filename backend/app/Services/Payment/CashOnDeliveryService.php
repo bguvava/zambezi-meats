@@ -6,6 +6,8 @@ namespace App\Services\Payment;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\InvoiceService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -14,10 +16,19 @@ use Illuminate\Support\Facades\Log;
  * Handles Cash on Delivery (COD) payment processing.
  *
  * @requirement CHK-012 Implement Cash on Delivery
+ * @requirement SET-028 Use settings from database
  */
 class CashOnDeliveryService implements PaymentServiceInterface
 {
     private const GATEWAY_COD = 'cod';
+    private SettingsService $settings;
+    private InvoiceService $invoiceService;
+
+    public function __construct(?SettingsService $settings = null, ?InvoiceService $invoiceService = null)
+    {
+        $this->settings = $settings ?? app(SettingsService::class);
+        $this->invoiceService = $invoiceService ?? app(InvoiceService::class);
+    }
 
     /**
      * Get the payment gateway name.
@@ -32,7 +43,7 @@ class CashOnDeliveryService implements PaymentServiceInterface
      */
     public function isEnabled(): bool
     {
-        return config('services.cod.enabled', true);
+        return $this->settings->isCodEnabled();
     }
 
     /**
@@ -108,14 +119,20 @@ class CashOnDeliveryService implements PaymentServiceInterface
             // Update order status to confirmed (payment pending until delivery)
             $order->update(['status' => Order::STATUS_CONFIRMED]);
 
+            // Generate invoice
+            $invoice = $this->invoiceService->generateFromOrder($order);
+
             Log::info('COD payment initiated', [
                 'order_id' => $order->id,
                 'payment_id' => $payment->id,
+                'invoice_id' => $invoice->id,
             ]);
 
             return [
                 'success' => true,
                 'payment_id' => $payment->id,
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
                 'message' => 'Your order has been placed. Please have $' . number_format((float) $order->total, 2) . ' ready upon delivery.',
                 'collect_amount' => (float) $order->total,
                 'collect_amount_formatted' => '$' . number_format((float) $order->total, 2),
@@ -168,6 +185,11 @@ class CashOnDeliveryService implements PaymentServiceInterface
             ]);
 
             $payment->order->update(['status' => Order::STATUS_DELIVERED]);
+
+            // Mark invoice as paid
+            if ($payment->order->invoice) {
+                $this->invoiceService->markAsPaid($payment->order->invoice);
+            }
 
             Log::info('COD payment confirmed', [
                 'payment_id' => $payment->id,

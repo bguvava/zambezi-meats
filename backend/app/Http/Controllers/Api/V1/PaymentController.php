@@ -149,7 +149,7 @@ class PaymentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Payment confirmed successfully.',
-            'order' => new OrderResource($payment->order->fresh(['items', 'address', 'payment'])),
+            'order' => new OrderResource($payment->order->fresh(['items', 'address', 'payment', 'invoice'])),
         ]);
     }
 
@@ -202,7 +202,7 @@ class PaymentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'PayPal payment confirmed successfully.',
-            'order' => new OrderResource($payment->order->fresh(['items', 'address', 'payment'])),
+            'order' => new OrderResource($payment->order->fresh(['items', 'address', 'payment', 'invoice'])),
         ]);
     }
 
@@ -272,7 +272,7 @@ class PaymentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Afterpay payment confirmed successfully.',
-            'order' => new OrderResource($payment->order->fresh(['items', 'address', 'payment'])),
+            'order' => new OrderResource($payment->order->fresh(['items', 'address', 'payment', 'invoice'])),
         ]);
     }
 
@@ -298,7 +298,8 @@ class PaymentController extends Controller
         return response()->json([
             'success' => true,
             'message' => $result['message'],
-            'order' => new OrderResource($order->fresh(['items', 'address', 'payment'])),
+            'order' => new OrderResource($order->fresh(['items', 'address', 'payment', 'invoice'])),
+            'invoice_number' => $result['invoice_number'] ?? null,
         ]);
     }
 

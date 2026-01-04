@@ -120,7 +120,30 @@ export const useProductsStore = defineStore("products", () => {
       const response = await api.get("/products/featured", {
         params: { limit },
       });
-      return response.data.data || response.data;
+
+      // Process and normalize the data
+      const featuredData = response.data.data || response.data;
+
+      // If it's an array, normalize each product
+      if (Array.isArray(featuredData)) {
+        const normalizedProducts = featuredData.map((product) => ({
+          ...product,
+          // Ensure category_name is extracted from category object
+          category_name: product.category?.name || product.category_name || "",
+          // Ensure main_image is properly set
+          main_image:
+            product.primary_image?.url ||
+            product.main_image ||
+            product.images?.[0]?.url ||
+            null,
+        }));
+
+        // Update products array with featured products
+        products.value = normalizedProducts;
+        return normalizedProducts;
+      }
+
+      return [];
     } catch (err) {
       error.value = err.message || "Failed to fetch featured products";
       throw err;
@@ -201,13 +224,22 @@ export const useProductsStore = defineStore("products", () => {
   /**
    * Fetch all categories
    * @requirement SHOP-023 Categories API
+   * @requirement ISSUE-008 Filter to show only main categories
+   * @param {Object} options - Fetch options
    */
-  async function fetchCategories() {
+  async function fetchCategories(options = {}) {
     isLoading.value = true;
     error.value = null;
 
     try {
-      const response = await api.get("/categories");
+      const params = {};
+
+      // Add main_only parameter if specified
+      if (options.mainOnly) {
+        params.main_only = true;
+      }
+
+      const response = await api.get("/categories", { params });
       categories.value = response.data.data || response.data;
       return categories.value;
     } catch (err) {

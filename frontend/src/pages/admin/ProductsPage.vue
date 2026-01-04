@@ -187,21 +187,52 @@ async function saveProduct() {
   isSubmitting.value = true
   try {
     const formData = new FormData()
+
+    // Add all form fields to FormData
     Object.keys(productForm.value).forEach(key => {
-      if (productForm.value[key] !== null && key !== 'image') {
-        formData.append(key, productForm.value[key])
+      const value = productForm.value[key]
+
+      // Skip null/undefined values and images array (handle separately)
+      if (value === null || value === undefined || key === 'images' || key === 'image') {
+        return
       }
+
+      // Convert category_id to integer
+      if (key === 'category_id') {
+        formData.append(key, parseInt(value, 10))
+        return
+      }
+
+      // Convert boolean values
+      if (key === 'is_active' || key === 'is_featured') {
+        formData.append(key, value ? '1' : '0')
+        return
+      }
+
+      // Convert numeric values
+      if (key === 'price_aud' || key === 'sale_price_aud' || key === 'stock' || key === 'weight_kg') {
+        formData.append(key, value.toString())
+        return
+      }
+
+      formData.append(key, value)
     })
-    if (productForm.value.image) {
-      formData.append('image', productForm.value.image)
+
+    // Handle image uploads
+    if (productForm.value.images && productForm.value.images.length > 0) {
+      productForm.value.images.forEach((image, index) => {
+        formData.append(`images[${index}]`, image)
+      })
+    } else if (productForm.value.image) {
+      formData.append('images[0]', productForm.value.image)
     }
 
     if (isEditing.value) {
-      await productsStore.updateProduct(productForm.value.id, productForm.value)
+      await productsStore.updateProduct(productForm.value.id, formData)
     } else {
-      await productsStore.createProduct(productForm.value)
+      await productsStore.createProduct(formData)
     }
-    
+
     closeProductModal()
     await fetchProducts()
   } catch (err) {
@@ -218,7 +249,7 @@ function confirmDelete(product) {
 
 async function deleteProduct() {
   if (!productToDelete.value) return
-  
+
   isSubmitting.value = true
   try {
     await productsStore.deleteProduct(productToDelete.value.id)
@@ -274,12 +305,12 @@ async function exportProducts() {
             <p class="text-gray-600 mt-1">Manage your product catalog</p>
           </div>
           <div class="flex items-center gap-3 mt-4 md:mt-0">
-            <button @click="exportProducts" 
+            <button @click="exportProducts"
               class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
               <Download class="w-4 h-4 mr-2" />
               Export
             </button>
-            <button @click="openCreateModal" 
+            <button @click="openCreateModal"
               class="inline-flex items-center px-4 py-2 bg-[#CF0D0F] text-white rounded-lg hover:bg-[#B00B0D] transition-colors">
               <Plus class="w-4 h-4 mr-2" />
               Add Product
@@ -293,29 +324,23 @@ async function exportProducts() {
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex-1 min-w-[200px] relative">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input 
-              v-model="searchQuery"
-              type="text" 
-              placeholder="Search products by name or SKU..." 
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"
-            />
+            <input v-model="searchQuery" type="text" placeholder="Search products by name or SKU..."
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]" />
           </div>
-          <select 
-            v-model="selectedCategory"
+          <select v-model="selectedCategory"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]">
             <option value="">All Categories</option>
             <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
             </option>
           </select>
-          <select 
-            v-model="selectedStatus"
+          <select v-model="selectedStatus"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]">
             <option v-for="option in statusOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
           </select>
-          <button @click="fetchProducts" 
+          <button @click="fetchProducts"
             class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             :disabled="isLoading">
             <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': isLoading }" />
@@ -326,7 +351,8 @@ async function exportProducts() {
       <!-- Loading State -->
       <div v-if="isLoading" class="flex items-center justify-center py-16">
         <div class="text-center">
-          <div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-[#CF0D0F] border-t-transparent"></div>
+          <div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-[#CF0D0F] border-t-transparent">
+          </div>
           <p class="mt-4 text-gray-600">Loading products...</p>
         </div>
       </div>
@@ -347,7 +373,8 @@ async function exportProducts() {
 
       <!-- Products Grid -->
       <div v-else>
-        <div v-if="products.length === 0" class="bg-white rounded-lg shadow-sm border-2 border-[#CF0D0F] p-16 text-center">
+        <div v-if="products.length === 0"
+          class="bg-white rounded-lg shadow-sm border-2 border-[#CF0D0F] p-16 text-center">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package class="w-8 h-8 text-gray-400" />
           </div>
@@ -364,12 +391,15 @@ async function exportProducts() {
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category
+                  </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                  </th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -377,12 +407,8 @@ async function exportProducts() {
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-12 w-12">
-                        <img 
-                          v-if="product.image_url" 
-                          :src="product.image_url" 
-                          :alt="product.name"
-                          class="h-12 w-12 rounded-lg object-cover"
-                        />
+                        <img v-if="product.image_url" :src="product.image_url" :alt="product.name"
+                          class="h-12 w-12 rounded-lg object-cover" />
                         <div v-else class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
                           <Package class="w-6 h-6 text-gray-400" />
                         </div>
@@ -418,25 +444,24 @@ async function exportProducts() {
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span :class="[
                       'inline-flex px-2 py-1 text-xs font-medium rounded-full',
-                      product.is_active 
-                        ? 'bg-green-100 text-green-800' 
+                      product.is_active
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
                     ]">
                       {{ product.is_active ? 'Active' : 'Inactive' }}
                     </span>
-                    <span v-if="product.is_featured" class="ml-2 inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                    <span v-if="product.is_featured"
+                      class="ml-2 inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
                       Featured
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right">
                     <div class="flex items-center justify-end space-x-2">
-                      <button 
-                        @click="openEditModal(product)"
+                      <button @click="openEditModal(product)"
                         class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                         <Edit class="w-4 h-4" />
                       </button>
-                      <button 
-                        @click="confirmDelete(product)"
+                      <button @click="confirmDelete(product)"
                         class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash2 class="w-4 h-4" />
                       </button>
@@ -448,22 +473,22 @@ async function exportProducts() {
           </div>
 
           <!-- Pagination -->
-          <div v-if="pagination.lastPage > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div v-if="pagination.lastPage > 1"
+            class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <p class="text-sm text-gray-500">
-              Showing {{ ((pagination.currentPage - 1) * pagination.perPage) + 1 }} to {{ Math.min(pagination.currentPage * pagination.perPage, pagination.total) }} of {{ pagination.total }} products
+              Showing {{ ((pagination.currentPage - 1) * pagination.perPage) + 1 }} to {{
+                Math.min(pagination.currentPage * pagination.perPage, pagination.total) }} of {{ pagination.total }}
+              products
             </p>
             <div class="flex items-center space-x-2">
-              <button 
-                @click="goToPage(pagination.currentPage - 1)"
-                :disabled="pagination.currentPage === 1"
+              <button @click="goToPage(pagination.currentPage - 1)" :disabled="pagination.currentPage === 1"
                 class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                 <ChevronLeft class="w-4 h-4" />
               </button>
               <span class="px-3 py-1 text-sm text-gray-700">
                 Page {{ pagination.currentPage }} of {{ pagination.lastPage }}
               </span>
-              <button 
-                @click="goToPage(pagination.currentPage + 1)"
+              <button @click="goToPage(pagination.currentPage + 1)"
                 :disabled="pagination.currentPage === pagination.lastPage"
                 class="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                 <ChevronRight class="w-4 h-4" />
@@ -479,8 +504,9 @@ async function exportProducts() {
       <div v-if="showProductModal" class="fixed inset-0 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
           <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeProductModal"></div>
-          
-          <div class="relative inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full">
+
+          <div
+            class="relative inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full">
             <!-- Modal Header -->
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
               <div class="flex items-center justify-between">
@@ -499,31 +525,21 @@ async function exportProducts() {
                 <!-- Name -->
                 <div class="md:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                  <input 
-                    v-model="productForm.name"
-                    @blur="!isEditing && generateSlug()"
-                    type="text" 
-                    required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"
-                  />
+                  <input v-model="productForm.name" @blur="!isEditing && generateSlug()" type="text" required
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]" />
                 </div>
 
                 <!-- SKU -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                  <input 
-                    v-model="productForm.sku"
-                    type="text"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"
-                  />
+                  <input v-model="productForm.sku" type="text"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]" />
                 </div>
 
                 <!-- Category -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                  <select 
-                    v-model="productForm.category_id"
-                    required
+                  <select v-model="productForm.category_id" required
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]">
                     <option value="">Select Category</option>
                     <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -537,14 +553,8 @@ async function exportProducts() {
                   <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
                   <div class="relative">
                     <DollarSign class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input 
-                      v-model.number="productForm.price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      required
-                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"
-                    />
+                    <input v-model.number="productForm.price" type="number" step="0.01" min="0" required
+                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]" />
                   </div>
                 </div>
 
@@ -553,32 +563,22 @@ async function exportProducts() {
                   <label class="block text-sm font-medium text-gray-700 mb-1">Sale Price</label>
                   <div class="relative">
                     <DollarSign class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input 
-                      v-model.number="productForm.sale_price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"
-                    />
+                    <input v-model.number="productForm.sale_price" type="number" step="0.01" min="0"
+                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]" />
                   </div>
                 </div>
 
                 <!-- Stock Quantity -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-                  <input 
-                    v-model.number="productForm.stock_quantity"
-                    type="number"
-                    min="0"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"
-                  />
+                  <input v-model.number="productForm.stock_quantity" type="number" min="0"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]" />
                 </div>
 
                 <!-- Unit -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                  <select 
-                    v-model="productForm.unit"
+                  <select v-model="productForm.unit"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]">
                     <option v-for="unit in unitOptions" :key="unit.value" :value="unit.value">
                       {{ unit.label }}
@@ -589,24 +589,16 @@ async function exportProducts() {
                 <!-- Description -->
                 <div class="md:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea 
-                    v-model="productForm.description"
-                    rows="3"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"
-                  ></textarea>
+                  <textarea v-model="productForm.description" rows="3"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#CF0D0F] focus:border-[#CF0D0F]"></textarea>
                 </div>
 
                 <!-- Image Upload -->
                 <div class="md:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-                  <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#CF0D0F] transition-colors">
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      @change="handleImageUpload"
-                      class="hidden"
-                      id="product-image"
-                    />
+                  <div
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#CF0D0F] transition-colors">
+                    <input type="file" accept="image/*" @change="handleImageUpload" class="hidden" id="product-image" />
                     <label for="product-image" class="cursor-pointer">
                       <Upload class="w-8 h-8 text-gray-400 mx-auto mb-2" />
                       <p class="text-sm text-gray-600">Click to upload product image</p>
@@ -621,19 +613,13 @@ async function exportProducts() {
                 <!-- Toggles -->
                 <div class="md:col-span-2 flex items-center space-x-6">
                   <label class="flex items-center">
-                    <input 
-                      v-model="productForm.is_active"
-                      type="checkbox"
-                      class="w-4 h-4 text-[#CF0D0F] border-gray-300 rounded focus:ring-[#CF0D0F]"
-                    />
+                    <input v-model="productForm.is_active" type="checkbox"
+                      class="w-4 h-4 text-[#CF0D0F] border-gray-300 rounded focus:ring-[#CF0D0F]" />
                     <span class="ml-2 text-sm text-gray-700">Active</span>
                   </label>
                   <label class="flex items-center">
-                    <input 
-                      v-model="productForm.is_featured"
-                      type="checkbox"
-                      class="w-4 h-4 text-[#CF0D0F] border-gray-300 rounded focus:ring-[#CF0D0F]"
-                    />
+                    <input v-model="productForm.is_featured" type="checkbox"
+                      class="w-4 h-4 text-[#CF0D0F] border-gray-300 rounded focus:ring-[#CF0D0F]" />
                     <span class="ml-2 text-sm text-gray-700">Featured</span>
                   </label>
                 </div>
@@ -642,12 +628,11 @@ async function exportProducts() {
 
             <!-- Modal Footer -->
             <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-              <button @click="closeProductModal" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+              <button @click="closeProductModal"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
                 Cancel
               </button>
-              <button 
-                @click="saveProduct"
-                :disabled="isSubmitting"
+              <button @click="saveProduct" :disabled="isSubmitting"
                 class="px-4 py-2 bg-[#CF0D0F] text-white rounded-lg hover:bg-[#B00B0D] disabled:opacity-50">
                 {{ isSubmitting ? 'Saving...' : (isEditing ? 'Update Product' : 'Add Product') }}
               </button>
@@ -662,8 +647,9 @@ async function exportProducts() {
       <div v-if="showDeleteModal" class="fixed inset-0 z-[60] overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
           <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showDeleteModal = false"></div>
-          
-          <div class="relative inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-md sm:w-full">
+
+          <div
+            class="relative inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-md sm:w-full">
             <div class="px-6 py-4">
               <div class="flex items-center">
                 <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
@@ -678,12 +664,11 @@ async function exportProducts() {
               </div>
             </div>
             <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
-              <button @click="showDeleteModal = false" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+              <button @click="showDeleteModal = false"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
                 Cancel
               </button>
-              <button 
-                @click="deleteProduct"
-                :disabled="isSubmitting"
+              <button @click="deleteProduct" :disabled="isSubmitting"
                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
                 {{ isSubmitting ? 'Deleting...' : 'Delete' }}
               </button>

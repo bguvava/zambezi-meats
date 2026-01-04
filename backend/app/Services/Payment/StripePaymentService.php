@@ -6,6 +6,8 @@ namespace App\Services\Payment;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\InvoiceService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -14,16 +16,24 @@ use Illuminate\Support\Facades\Log;
  * Handles Stripe payment processing using Stripe PHP SDK.
  *
  * @requirement CHK-009 Integrate Stripe payment
+ * @requirement SET-028 Use settings from database
  */
 class StripePaymentService implements PaymentServiceInterface
 {
     private ?object $stripe = null;
+    private SettingsService $settings;
+    private InvoiceService $invoiceService;
 
-    public function __construct()
+    public function __construct(?SettingsService $settings = null, ?InvoiceService $invoiceService = null)
     {
-        if (class_exists(\Stripe\Stripe::class)) {
-            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
-            $this->stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+        $this->settings = $settings ?? app(SettingsService::class);
+        $this->invoiceService = $invoiceService ?? app(InvoiceService::class);
+
+        $secretKey = $this->settings->getStripeSecretKey();
+
+        if ($secretKey && class_exists(\Stripe\Stripe::class)) {
+            \Stripe\Stripe::setApiKey($secretKey);
+            $this->stripe = new \Stripe\StripeClient($secretKey);
         }
     }
 
@@ -40,7 +50,7 @@ class StripePaymentService implements PaymentServiceInterface
      */
     public function isEnabled(): bool
     {
-        return !empty(config('services.stripe.secret'));
+        return $this->settings->isStripeEnabled() && !empty($this->settings->getStripeSecretKey());
     }
 
     /**
@@ -82,12 +92,17 @@ class StripePaymentService implements PaymentServiceInterface
                 ],
             ]);
 
+            // Generate invoice
+            $invoice = $this->invoiceService->generateFromOrder($order);
+
             return [
                 'success' => true,
                 'payment_id' => $payment->id,
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
                 'client_secret' => $paymentIntent->client_secret,
                 'payment_intent_id' => $paymentIntent->id,
-                'publishable_key' => config('services.stripe.key'),
+                'publishable_key' => $this->settings->getStripePublicKey(),
             ];
         } catch (\Exception $e) {
             Log::error('Stripe payment initiation failed', [
@@ -130,6 +145,11 @@ class StripePaymentService implements PaymentServiceInterface
 
                 // Update order status
                 $payment->order->update(['status' => Order::STATUS_CONFIRMED]);
+
+                // Mark invoice as paid
+                if ($payment->order->invoice) {
+                    $this->invoiceService->markAsPaid($payment->order->invoice);
+                }
 
                 return [
                     'success' => true,
@@ -212,7 +232,7 @@ class StripePaymentService implements PaymentServiceInterface
     public function handleWebhook(array $payload, string $signature): array
     {
         try {
-            $webhookSecret = config('services.stripe.webhook_secret');
+            $webhookSecret = $this->settings->getStripeWebhookSecret();
 
             if ($webhookSecret && class_exists(\Stripe\Webhook::class)) {
                 $event = \Stripe\Webhook::constructEvent(
@@ -397,7 +417,7 @@ class StripePaymentService implements PaymentServiceInterface
             'payment_id' => $payment->id,
             'client_secret' => $mockClientSecret,
             'payment_intent_id' => $mockPaymentIntentId,
-            'publishable_key' => config('services.stripe.key', 'pk_test_mock'),
+            'publishable_key' => $this->settings->getStripePublicKey() ?: 'pk_test_mock',
             'mock' => true,
         ];
     }

@@ -218,9 +218,7 @@ function clearError(field) {
       <!-- Logo & Title -->
       <div class="text-center">
         <RouterLink to="/" class="inline-flex items-center justify-center gap-2">
-          <div class="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center font-bold text-2xl text-white">
-            ZM
-          </div>
+          <img src="/images/logo.png" alt="Zambezi Meats" class="h-24 w-auto object-contain" />
         </RouterLink>
         <h2 class="mt-6 text-3xl font-bold text-gray-900">
           Create your account

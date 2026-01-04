@@ -1,36 +1,28 @@
 <template>
   <div
-    class="bg-white rounded-xl p-6 shadow-md border-2 transition-all duration-200 hover:shadow-xl hover:scale-105"
-    style="border-color: #CF0D0F;"
-  >
+    class="bg-white rounded-lg p-4 shadow-sm border border-gray-200 transition-all duration-200 hover:shadow-md hover:border-[#CF0D0F]">
     <!-- Header with Icon and Change Badge -->
     <div class="flex items-center justify-between mb-4">
       <!-- Icon -->
-      <div
-        class="w-14 h-14 rounded-xl flex items-center justify-center"
-        :style="{ background: iconBackground }"
-      >
-        <component :is="icon" class="w-7 h-7" style="color: #CF0D0F;" />
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center" :style="{ background: iconBackground }">
+        <component :is="icon" class="w-6 h-6 text-white" />
       </div>
 
       <!-- Percentage Change Badge -->
-      <span
-        v-if="showChange && change !== null"
-        class="text-sm font-bold px-3 py-1 rounded-full flex items-center gap-1"
-        :style="changeBadgeStyle"
-      >
+      <span v-if="showChange && change !== null"
+        class="text-sm font-bold px-3 py-1 rounded-full flex items-center gap-1" :style="changeBadgeStyle">
         <component :is="changeIcon" class="w-4 h-4" />
         {{ Math.abs(change) }}%
       </span>
     </div>
 
     <!-- Value -->
-    <p class="text-3xl font-bold mb-2" style="color: #4D4B4C;">
+    <p class="text-2xl font-bold mb-1 text-gray-900">
       {{ formattedValue }}
     </p>
 
     <!-- Label -->
-    <p class="text-sm font-medium uppercase tracking-wider" style="color: #6F6F6F;">
+    <p class="text-xs font-medium text-gray-600">
       {{ label }}
     </p>
 
@@ -48,7 +40,7 @@ import { TrendingUpIcon, TrendingDownIcon, MinusIcon } from 'lucide-vue-next'
 const props = defineProps({
   // Icon component (from lucide-vue-next or heroicons)
   icon: {
-    type: Object,
+    type: [Object, Function],
     required: true
   },
 

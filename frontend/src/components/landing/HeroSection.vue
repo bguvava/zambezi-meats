@@ -46,6 +46,18 @@ onMounted(() => {
         class="max-w-3xl transition-all duration-1000 ease-out"
         :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'"
       >
+        <!-- Company Logo -->
+        <div
+          class="mb-8 transition-all duration-700 delay-50"
+          :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'"
+        >
+          <img 
+            src="/images/official_logo_landscape_white.png" 
+            alt="Zambezi Meats" 
+            class="h-20 sm:h-28 lg:h-36 w-auto drop-shadow-2xl filter brightness-110 contrast-110"
+          />
+        </div>
+
         <!-- Badge -->
         <div
           class="inline-flex items-center gap-2 bg-primary-600/20 backdrop-blur-sm border border-primary-500/30 rounded-full px-4 py-2 mb-6 transition-all duration-700 delay-100"

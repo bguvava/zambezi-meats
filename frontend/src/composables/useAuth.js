@@ -78,7 +78,7 @@ export function useAuth() {
       case "staff":
         return "/staff";
       case "customer":
-        return "/shop";
+        return "/customer"; // Redirect to customer dashboard, not shop
       default:
         return "/shop";
     }

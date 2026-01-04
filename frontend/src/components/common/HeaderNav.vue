@@ -24,6 +24,7 @@ const navLinks = [
   { name: 'Home', to: '/' },
   { name: 'Shop', to: '/shop' },
   { name: 'About', to: '/about' },
+  { name: 'Blog', to: '/blog' },
   { name: 'Contact', to: '/contact' }
 ]
 
@@ -39,6 +40,22 @@ const isLoggedIn = computed(() => authStore.isAuthenticated)
 const user = computed(() => authStore.user)
 const cartItemCount = computed(() => cartStore?.itemCount ?? 0)
 const cartTotal = computed(() => cartStore?.formattedTotal ?? '$0.00')
+
+// Get correct dashboard route based on user role
+const dashboardRoute = computed(() => {
+  if (authStore.isAdmin) return '/admin'
+  if (authStore.isStaff) return '/staff'
+  return '/customer'
+})
+
+// Get correct logo based on styling
+const logoSrc = computed(() => {
+  // On homepage before scrolling, use white landscape logo
+  // After scrolling or on other pages, use dark landscape logo
+  return useDarkStyling.value 
+    ? '/images/logo-landscape.png' 
+    : '/images/logo-landscape-white.png'
+})
 
 // Pages with dark hero sections that allow transparent header
 const darkHeroPages = ['/']
@@ -115,12 +132,8 @@ onUnmounted(() => {
       <div class="flex items-center justify-between h-16 md:h-20">
         <!-- Logo -->
         <RouterLink to="/" class="flex-shrink-0 flex items-center gap-2">
-          <img src="/images/logo.png" alt="Zambezi Meats"
-            class="h-10 w-10 md:h-12 md:w-12 object-contain rounded-full" />
-          <span class="text-lg md:text-xl font-bold transition-colors"
-            :class="useDarkStyling ? 'text-secondary-700' : 'text-white'">
-            Zambezi Meats
-          </span>
+          <img :src="logoSrc" alt="Zambezi Meats"
+            class="h-10 md:h-12 object-contain" />
         </RouterLink>
 
         <!-- Desktop Navigation -->
@@ -188,15 +201,15 @@ onUnmounted(() => {
                   <p class="text-sm font-medium text-gray-900">{{ user?.name }}</p>
                   <p class="text-xs text-gray-500">{{ user?.email }}</p>
                 </div>
-                <RouterLink to="/customer" @click="closeUserMenu"
+                <RouterLink :to="dashboardRoute" @click="closeUserMenu"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   Dashboard
                 </RouterLink>
-                <RouterLink to="/customer/orders" @click="closeUserMenu"
+                <RouterLink :to="`${dashboardRoute}/orders`" @click="closeUserMenu"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   My Orders
                 </RouterLink>
-                <RouterLink to="/customer/profile" @click="closeUserMenu"
+                <RouterLink :to="`${dashboardRoute}/profile`" @click="closeUserMenu"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   Profile Settings
                 </RouterLink>
@@ -266,11 +279,11 @@ onUnmounted(() => {
                 </div>
               </div>
               <div class="space-y-1">
-                <RouterLink to="/customer" @click="closeMobileMenu"
+                <RouterLink :to="dashboardRoute" @click="closeMobileMenu"
                   class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
                   Dashboard
                 </RouterLink>
-                <RouterLink to="/customer/orders" @click="closeMobileMenu"
+                <RouterLink :to="`${dashboardRoute}/orders`" @click="closeMobileMenu"
                   class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
                   My Orders
                 </RouterLink>

@@ -3,16 +3,18 @@
  * Home Page
  *
  * Landing page with hero section, featured products,
- * delivery zones, newsletter, and contact sections.
+ * delivery zones, newsletter, and service area map.
  *
  * @requirement LAND-001 to LAND-015 Complete landing page implementation
+ * @requirement ISSUE-005 Service area map showing 50km radius
  */
 import HeroSection from '@/components/landing/HeroSection.vue'
 import FeaturedProducts from '@/components/landing/FeaturedProducts.vue'
 import WhyChooseUs from '@/components/landing/WhyChooseUs.vue'
+import PromotionalSection from '@/components/landing/PromotionalSection.vue'
 import DeliveryZones from '@/components/landing/DeliveryZones.vue'
 import NewsletterSection from '@/components/landing/NewsletterSection.vue'
-import ContactSection from '@/components/landing/ContactSection.vue'
+import ServiceAreaMap from '@/components/landing/ServiceAreaMap.vue'
 </script>
 
 <template>
@@ -23,8 +25,11 @@ import ContactSection from '@/components/landing/ContactSection.vue'
     <!-- Featured Products Grid -->
     <FeaturedProducts />
 
-    <!-- Why Choose Us - 6 Feature Cards -->
+    <!-- Why Choose Us - Icon-Based Design -->
     <WhyChooseUs />
+
+    <!-- Promotional Section -->
+    <PromotionalSection />
 
     <!-- Delivery Zones Interactive Map -->
     <DeliveryZones />
@@ -32,8 +37,8 @@ import ContactSection from '@/components/landing/ContactSection.vue'
     <!-- Newsletter Signup -->
     <NewsletterSection />
 
-    <!-- Contact Form and Info -->
-    <ContactSection />
+    <!-- Service Area Map with 50km coverage -->
+    <ServiceAreaMap />
   </div>
 </template>
 

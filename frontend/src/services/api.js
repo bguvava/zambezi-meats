@@ -67,7 +67,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // List of endpoints where 401 should NOT trigger a redirect
+      // List of endpoints where 401 should NOT trigger a redirect or console error
       // These are either public endpoints or auth check endpoints
       // Note: paths are relative to /api/v1 base URL
       const noRedirectEndpoints = [
@@ -88,16 +88,29 @@ api.interceptors.response.use(
       if (!shouldNotRedirect) {
         try {
           const authStore = useAuthStore();
-          // Only redirect if user was previously authenticated (session expired)
-          const wasAuthenticated = authStore.isAuthenticated;
-          authStore.clearAuth();
+          // Only redirect if user WAS authenticated and NOW got 401 (actual session expiry)
+          // Don't redirect if they were never logged in (guest accessing protected route)
+          const wasAuthenticated =
+            authStore.isAuthenticated ||
+            localStorage.getItem("zambezi_auth") === "true";
 
           if (wasAuthenticated) {
+            authStore.clearAuth();
             // Session actually expired - redirect to login
             window.location.href = "/login?session_expired=true";
+          } else {
+            // Not authenticated, just clear auth state
+            authStore.clearAuth();
           }
         } catch (e) {
           console.error("Failed to handle 401:", e);
+        }
+      } else {
+        // For auth/user endpoint, silently reject without logging
+        if (originalRequest.url?.includes("/auth/user")) {
+          // Mark as handled and don't log in console
+          error.handled = true;
+          return Promise.reject(error);
         }
       }
 

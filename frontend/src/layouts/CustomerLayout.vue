@@ -3,12 +3,14 @@
  * Customer Layout
  *
  * Dashboard layout for authenticated customers with sidebar navigation.
+ * Responsive design with mobile slide-in, tablet auto-collapse, desktop full sidebar.
  *
  * @requirement PROJ-INIT-012 Create base layout components
  */
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useWishlistStore } from '@/stores/wishlist'
 import LogoutConfirmModal from '@/components/common/LogoutConfirmModal.vue'
 import SessionWarningModal from '@/components/auth/SessionWarningModal.vue'
 import DashboardFooter from '@/components/common/DashboardFooter.vue'
@@ -32,7 +34,9 @@ import {
 
 const router = useRouter()
 const authStore = useAuthStore()
+const wishlistStore = useWishlistStore()
 const isSidebarOpen = ref(false)
+const isSidebarCollapsed = ref(false)
 const showLogoutModal = ref(false)
 
 const navigation = [
@@ -44,6 +48,32 @@ const navigation = [
   { name: 'Notifications', href: '/customer/notifications', icon: Bell },
   { name: 'Support', href: '/customer/support', icon: MessageCircle },
 ]
+
+// Handle responsive behavior
+function handleResize() {
+  const width = window.innerWidth
+  // Auto-collapse on tablet (768-1024px)
+  if (width >= 768 && width < 1280) {
+    isSidebarCollapsed.value = true
+  } else if (width >= 1280) {
+    isSidebarCollapsed.value = false
+  }
+  // Close mobile sidebar on resize to desktop
+  if (width >= 1024 && isSidebarOpen.value) {
+    isSidebarOpen.value = false
+  }
+}
+
+onMounted(() => {
+  handleResize()
+  window.addEventListener('resize', handleResize)
+  // Load wishlist for authenticated customer
+  wishlistStore.fetchWishlist()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 
 function promptLogout() {
   showLogoutModal.value = true
@@ -63,6 +93,10 @@ function cancelLogout() {
 function toggleSidebar() {
   isSidebarOpen.value = !isSidebarOpen.value
 }
+
+function toggleSidebarCollapse() {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+}
 </script>
 
 <template>
@@ -70,7 +104,8 @@ function toggleSidebar() {
     <!-- Mobile Header -->
     <header class="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 h-16">
       <div class="flex items-center justify-between h-full px-4">
-        <button @click="toggleSidebar" class="p-2 text-gray-600 hover:text-gray-900">
+        <button @click="toggleSidebar"
+          class="p-2 text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg transition-colors">
           <Menu class="w-6 h-6" />
         </button>
         <RouterLink to="/" class="flex items-center space-x-2">
@@ -81,70 +116,100 @@ function toggleSidebar() {
       </div>
     </header>
 
-    <!-- Sidebar Overlay -->
-    <div v-if="isSidebarOpen" class="lg:hidden fixed inset-0 z-40 bg-black/50" @click="toggleSidebar"></div>
+    <!-- Sidebar Overlay (Mobile & Tablet) -->
+    <Transition name="fade">
+      <div v-if="isSidebarOpen" class="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+        @click="toggleSidebar"></div>
+    </Transition>
 
     <!-- Sidebar -->
     <aside :class="[
-      'fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out',
+      'fixed top-0 left-0 z-50 h-full bg-white border-r border-gray-200 transform transition-all duration-300 ease-in-out flex flex-col',
       isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+      isSidebarCollapsed ? 'lg:w-20' : 'w-64',
     ]">
       <!-- Sidebar Header -->
-      <div class="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-        <RouterLink to="/" class="flex items-center space-x-2">
-          <img src="/images/logo.png" alt="Zambezi Meats" class="w-8 h-8 rounded-full object-contain" />
-          <span class="font-bold text-secondary-900">Zambezi Meats</span>
+      <div class="h-16 flex items-center justify-between px-4 border-b border-gray-200"
+        :class="{ 'lg:px-2': isSidebarCollapsed }">
+        <RouterLink to="/" class="flex items-center space-x-2" :class="{ 'lg:justify-center': isSidebarCollapsed }">
+          <img src="/images/logo.png" alt="Zambezi Meats" class="w-8 h-8 rounded-full object-contain flex-shrink-0" />
+          <span v-if="!isSidebarCollapsed" class="font-bold text-secondary-900 lg:inline">Zambezi Meats</span>
         </RouterLink>
-        <button @click="toggleSidebar" class="lg:hidden p-2 text-gray-600 hover:text-gray-900">
-          <X class="w-5 h-5" />
-        </button>
-      </div>
-
-      <!-- Back to Shop -->
-      <div class="p-4 border-b border-gray-200">
-        <RouterLink to="/shop"
-          class="flex items-center space-x-2 text-primary-700 hover:text-primary-800 text-sm font-medium">
-          <ChevronLeft class="w-4 h-4" />
-          <span>Back to Shop</span>
-        </RouterLink>
+        <div class="flex items-center gap-1">
+          <!-- Collapse Toggle (Desktop) -->
+          <button @click="toggleSidebarCollapse"
+            class="hidden lg:block p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+            <ChevronLeft class="w-4 h-4 transition-transform duration-300"
+              :class="{ 'rotate-180': isSidebarCollapsed }" />
+          </button>
+          <!-- Close (Mobile) -->
+          <button @click="toggleSidebar"
+            class="lg:hidden p-2 text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg transition-colors">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <!-- User Info -->
-      <div class="p-4 border-b border-gray-200">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-            <User class="w-5 h-5 text-primary-700" />
+      <div class="p-4 border-b border-gray-200" :class="{ 'lg:px-2': isSidebarCollapsed }">
+        <div class="flex items-center space-x-3" :class="{ 'lg:justify-center': isSidebarCollapsed }">
+          <div
+            class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <img v-if="authStore.user?.avatar" :src="authStore.user.avatar" :alt="authStore.userName"
+              class="w-full h-full object-cover" @error="($event) => $event.target.src = '/images/user.jpg'" />
+            <img v-else src="/images/user.jpg" :alt="authStore.userName" class="w-full h-full object-cover" />
           </div>
-          <div>
-            <p class="font-medium text-secondary-900">{{ authStore.userName }}</p>
+          <div v-if="!isSidebarCollapsed" class="lg:block overflow-hidden">
+            <p class="font-medium text-secondary-900 truncate">{{ authStore.userName }}</p>
             <p class="text-sm text-gray-500">Customer</p>
           </div>
         </div>
       </div>
 
       <!-- Navigation -->
-      <nav class="p-4 space-y-1">
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" :class="{ 'lg:px-2': isSidebarCollapsed }">
         <RouterLink v-for="item in navigation" :key="item.name" :to="item.href"
-          class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-          active-class="bg-primary-50 text-primary-700 font-medium" @click="isSidebarOpen = false">
-          <component :is="item.icon" class="w-5 h-5" />
-          <span>{{ item.name }}</span>
+          class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition-all duration-150"
+          :class="{ 'lg:justify-center lg:px-2': isSidebarCollapsed }"
+          active-class="bg-primary-50 text-primary-700 font-medium shadow-sm" @click="isSidebarOpen = false"
+          :title="isSidebarCollapsed ? item.name : ''">
+          <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+          <span v-if="!isSidebarCollapsed" class="lg:inline">{{ item.name }}</span>
         </RouterLink>
       </nav>
 
-      <!-- Logout -->
-      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-        <button @click="promptLogout"
-          class="flex items-center space-x-3 w-full px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors">
-          <LogOut class="w-5 h-5" />
-          <span>Logout</span>
-        </button>
+      <!-- Bottom Actions -->
+      <div class="border-t border-gray-200 bg-white" :class="{ 'lg:px-2': isSidebarCollapsed }">
+        <!-- Back to Shop -->
+        <div class="p-2 border-b border-gray-200">
+          <RouterLink to="/shop"
+            class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 py-1.5 rounded-lg text-sm transition-colors"
+            :class="{ 'lg:justify-center lg:px-1.5': isSidebarCollapsed }"
+            :title="isSidebarCollapsed ? 'Back to Shop' : ''">
+            <ChevronLeft class="w-4 h-4 flex-shrink-0" />
+            <span v-if="!isSidebarCollapsed" class="lg:inline">Back to Shop</span>
+          </RouterLink>
+        </div>
+
+        <!-- Logout -->
+        <div class="p-3">
+          <button @click="promptLogout"
+            class="flex items-center space-x-2.5 w-full px-2.5 py-2 rounded-lg text-red-600 hover:bg-red-50 active:bg-red-100 transition-all duration-150 text-sm font-medium"
+            :class="{ 'lg:justify-center lg:px-2': isSidebarCollapsed }" :title="isSidebarCollapsed ? 'Logout' : ''">
+            <LogOut class="w-4 h-4 flex-shrink-0" />
+            <span v-if="!isSidebarCollapsed" class="lg:inline">Logout</span>
+          </button>
+        </div>
       </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-      <div class="p-4 sm:p-6 lg:p-8">
+    <main :class="[
+      'pt-16 lg:pt-0 min-h-screen transition-all duration-300 flex flex-col',
+      isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64',
+    ]">
+      <div class="p-4 sm:p-6 lg:p-8 flex-1">
         <RouterView />
       </div>
 
@@ -159,3 +224,43 @@ function toggleSidebar() {
     <LogoutConfirmModal :is-open="showLogoutModal" @confirm="handleLogout" @cancel="cancelLogout" />
   </div>
 </template>
+
+<style scoped>
+/* Fade transition for overlay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Smooth scrollbar for navigation */
+nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+nav::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* Touch optimization for mobile */
+@media (max-width: 1023px) {
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+</style>

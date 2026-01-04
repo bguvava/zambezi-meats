@@ -196,6 +196,14 @@ class Order extends Model
     }
 
     /**
+     * Get the invoice.
+     */
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class);
+    }
+
+    /**
      * Get the delivery proof.
      */
     public function deliveryProof(): HasOne

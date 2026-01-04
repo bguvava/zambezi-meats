@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\InvoiceResource;
 use App\Http\Resources\Api\V1\OrderResource;
 use App\Models\DeliveryProof;
+use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\WasteLog;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -1011,6 +1014,114 @@ class StaffController extends Controller
             'message' => 'Order marked as picked up.',
             'order' => new OrderResource($order->fresh()),
         ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Invoice Management (Read-Only)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get all invoices (paginated, with filters and search).
+     */
+    public function getInvoices(Request $request): JsonResponse
+    {
+        $this->authorizeStaff($request);
+
+        $query = Invoice::with(['order.user'])
+            ->orderBy($request->input('sort_by', 'created_at'), $request->input('sort_order', 'desc'));
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Search by invoice number or customer
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                    ->orWhereHas('order.user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $perPage = min($request->input('per_page', 15), 100);
+        $invoices = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => InvoiceResource::collection($invoices),
+            'pagination' => [
+                'current_page' => $invoices->currentPage(),
+                'last_page' => $invoices->lastPage(),
+                'per_page' => $invoices->perPage(),
+                'total' => $invoices->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get a specific invoice (read-only).
+     */
+    public function getInvoice(Request $request, int $id): JsonResponse
+    {
+        $this->authorizeStaff($request);
+
+        $invoice = Invoice::with([
+            'order.user',
+            'order.items.product',
+            'order.address',
+        ])->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data' => new InvoiceResource($invoice),
+        ]);
+    }
+
+    /**
+     * Get invoice statistics (read-only).
+     */
+    public function getInvoiceStats(Request $request): JsonResponse
+    {
+        $this->authorizeStaff($request);
+
+        $stats = [
+            'total_invoices' => Invoice::count(),
+            'paid_invoices' => Invoice::where('status', Invoice::STATUS_PAID)->count(),
+            'pending_invoices' => Invoice::where('status', Invoice::STATUS_PENDING)->count(),
+            'overdue_invoices' => Invoice::where('status', Invoice::STATUS_OVERDUE)->count(),
+            'total_amount' => Invoice::sum('total'),
+            'paid_amount' => Invoice::where('status', Invoice::STATUS_PAID)->sum('total'),
+            'pending_amount' => Invoice::where('status', Invoice::STATUS_PENDING)->sum('total'),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats,
+        ]);
+    }
+
+    /**
+     * Download invoice as PDF (read-only).
+     */
+    public function downloadInvoicePDF(Request $request, int $id)
+    {
+        $this->authorizeStaff($request);
+
+        $invoice = Invoice::with([
+            'order.user',
+            'order.items',
+            'order.address',
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('invoices.pdf', ['invoice' => $invoice]);
+
+        return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
     }
 
     /*

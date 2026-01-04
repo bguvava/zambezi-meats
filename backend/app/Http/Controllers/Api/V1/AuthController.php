@@ -162,6 +162,40 @@ class AuthController extends Controller
     }
 
     /**
+     * Unlock locked session with password verification.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function unlock(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|regex:/^\S+$/',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials.',
+            ], 401);
+        }
+
+        // Regenerate session to prevent session fixation
+        $request->session()->regenerate();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Session unlocked successfully.',
+            'data' => [
+                'expires_at' => now()->addMinutes(config('session.lifetime'))->toIso8601String(),
+            ],
+        ]);
+    }
+
+    /**
      * Send password reset link.
      *
      * @param ForgotPasswordRequest $request

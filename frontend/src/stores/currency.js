@@ -144,6 +144,15 @@ export const useCurrencyStore = defineStore("currency", () => {
   }
 
   /**
+   * Format price in current currency (alias for format)
+   * @param {number} price - Price to format (in AUD)
+   * @returns {string} Formatted price string
+   */
+  function formatPrice(price) {
+    return format(price, false);
+  }
+
+  /**
    * Get currency by code
    * @param {string} code - Currency code
    */
@@ -171,6 +180,7 @@ export const useCurrencyStore = defineStore("currency", () => {
     fetchExchangeRates,
     convert,
     format,
+    formatPrice,
     formatRaw,
     getCurrency,
   };
